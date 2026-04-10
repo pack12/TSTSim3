@@ -159,13 +159,13 @@ void MatchWidget::showNextEvent() {
         line = QString("<br><b style='color: #2dcc73; font-size: 14px;'>⚽ %1'  %2</b><br>")
             .arg(event.minute)
             .arg(QString::fromStdString(event.description));
-        eventTimer->setInterval(1500);  // Pause longer on goals for dramatic effect
+        eventTimer->setInterval(2500);  // Pause longer on goals for dramatic effect
     } else {
         // Normal event: plain text with minute number
         line = QString("%1'  %2")
             .arg(event.minute)
             .arg(QString::fromStdString(event.description));
-        eventTimer->setInterval(500);  // Normal pace for regular events
+        eventTimer->setInterval(1000);  // Normal pace for regular events
     }
 
     // Add the line to the commentary box and auto-scroll to the bottom
