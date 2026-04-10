@@ -23,9 +23,6 @@ public:
     explicit LeagueTableWidget(QWidget* parent = nullptr);
     void refresh(const League& league);
 
-signals:
-    void backClicked();
-
 private:
     QTableWidget* table = nullptr;
     QLabel* headerLabel = nullptr;  // Shows "League Table — Season X"

@@ -1005,6 +1005,8 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qstyle.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qtabbar.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
+  /Users/johnk/TST3SoccerSim/src/Theme.h \
+  /opt/homebrew/lib/QtCore.framework/Headers/QString \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QApplication \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qapplication.h \
   /opt/homebrew/lib/QtCore.framework/Headers/qcoreapplication.h \
@@ -1017,4 +1019,5 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: \
   /opt/homebrew/lib/QtCore.framework/Headers/qcoreapplication_platform.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qinputmethod.h \
-  /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication_platform.h
+  /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication_platform.h \
+  /opt/homebrew/lib/QtGui.framework/Headers/QFont

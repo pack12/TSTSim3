@@ -1,11 +1,5 @@
 // MainWindow.cpp
-// Implementation of the main window — the central controller of the application.
-// This file handles:
-//   - Building all UI screens in the constructor
-//   - Wiring up signal/slot connections
-//   - Navigation between screens
-//   - Game flow (starting games, playing matches, advancing seasons)
-//   - End-of-season logic (aging players, retiring old ones, regenerating squads)
+// Implementation of the FM-style main window with persistent sidebar navigation.
 
 #include "MainWindow.h"
 #include "SquadWidget.h"
@@ -24,90 +18,82 @@
 #include <QStatusBar>
 #include <QFont>
 #include <QApplication>
+#include <QStyle>
 #include <random>
 #include <algorithm>
 
-// ============================================================================
-// CONSTRUCTOR
-// ============================================================================
-// Builds the entire UI. This is a big constructor because it creates ALL screens upfront
-// and adds them to the QStackedWidget. Each screen is a QWidget with its own layout.
-//
-// The flow after construction:
-//   1. Title screen is shown first (showTitleScreen())
-//   2. Player clicks "New Game" → league is initialized → team selection screen shown
-//   3. Player picks a team → main menu is shown
-//   4. From the main menu, player navigates to sub-screens and back
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     setWindowTitle("TST3 Soccer Manager");
-    resize(1000, 700);  // Default window size — big enough to see everything
+    resize(1100, 750);
 
-    // QStackedWidget: the container that holds all screens. Only one is visible at a time.
-    stack = new QStackedWidget(this);
-    setCentralWidget(stack);
+    outerStack = new QStackedWidget(this);
+    setCentralWidget(outerStack);
 
-    // ========== TITLE SCREEN ==========
-    // The first thing the player sees: game title, subtitle, and three big buttons.
+    // ========================================================================
+    // TITLE SCREEN
+    // ========================================================================
     titlePage = new QWidget;
     auto* titleLayout = new QVBoxLayout(titlePage);
     titleLayout->setAlignment(Qt::AlignCenter);
 
     auto* titleLabel = new QLabel("TST3 SOCCER MANAGER");
-    QFont titleFont("Helvetica", 28, QFont::Bold);
-    titleLabel->setFont(titleFont);
+    titleLabel->setFont(QFont("Helvetica Neue", 32, QFont::Bold));
     titleLabel->setAlignment(Qt::AlignCenter);
+    titleLabel->setStyleSheet("color: #2dcc73;");
     titleLayout->addWidget(titleLabel);
 
     auto* subtitleLabel = new QLabel("A Text Simulation Football Manager");
-    subtitleLabel->setFont(QFont("Helvetica", 14));
+    subtitleLabel->setFont(QFont("Helvetica Neue", 14));
     subtitleLabel->setAlignment(Qt::AlignCenter);
-    subtitleLabel->setStyleSheet("color: #666;");  // Grey subtitle text
+    subtitleLabel->setStyleSheet("color: #6b7c93;");
     titleLayout->addWidget(subtitleLabel);
-    titleLayout->addSpacing(30);  // Gap between subtitle and buttons
+    titleLayout->addSpacing(40);
 
-    // Three buttons: New Game, Load Game, Quit — all the same size and centered
     auto* newGameBtn = new QPushButton("New Game");
-    newGameBtn->setFixedSize(200, 40);
-    newGameBtn->setFont(QFont("Helvetica", 14));
+    newGameBtn->setObjectName("titleBtnPrimary");
+    newGameBtn->setFixedSize(220, 44);
     titleLayout->addWidget(newGameBtn, 0, Qt::AlignCenter);
 
     auto* loadGameBtn = new QPushButton("Load Game");
-    loadGameBtn->setFixedSize(200, 40);
-    loadGameBtn->setFont(QFont("Helvetica", 14));
+    loadGameBtn->setObjectName("titleBtn");
+    loadGameBtn->setFixedSize(220, 44);
     titleLayout->addWidget(loadGameBtn, 0, Qt::AlignCenter);
+    titleLayout->addSpacing(6);
 
     auto* quitBtn = new QPushButton("Quit");
-    quitBtn->setFixedSize(200, 40);
-    quitBtn->setFont(QFont("Helvetica", 14));
+    quitBtn->setObjectName("titleBtn");
+    quitBtn->setFixedSize(220, 44);
     titleLayout->addWidget(quitBtn, 0, Qt::AlignCenter);
 
-    // Connect button clicks to their handler functions
     connect(newGameBtn, &QPushButton::clicked, this, &MainWindow::onNewGame);
     connect(loadGameBtn, &QPushButton::clicked, this, &MainWindow::onLoadGame);
     connect(quitBtn, &QPushButton::clicked, qApp, &QApplication::quit);
 
-    stack->addWidget(titlePage);
+    outerStack->addWidget(titlePage);
 
-    // ========== TEAM SELECTION SCREEN ==========
-    // Shows all 16 teams in a list with their overall rating and budget.
-    // Player can single-click to highlight, then click "Select Team" or double-click.
+    // ========================================================================
+    // TEAM SELECTION SCREEN
+    // ========================================================================
     teamSelectPage = new QWidget;
     auto* tsLayout = new QVBoxLayout(teamSelectPage);
+    tsLayout->setContentsMargins(40, 30, 40, 30);
+
     auto* tsTitle = new QLabel("Choose Your Team");
-    tsTitle->setFont(QFont("Helvetica", 20, QFont::Bold));
+    tsTitle->setFont(QFont("Helvetica Neue", 22, QFont::Bold));
     tsTitle->setAlignment(Qt::AlignCenter);
+    tsTitle->setStyleSheet("color: #2dcc73;");
     tsLayout->addWidget(tsTitle);
+    tsLayout->addSpacing(10);
 
     teamList = new QListWidget;
-    teamList->setFont(QFont("Courier", 13));           // Monospace so columns line up
-    teamList->setAlternatingRowColors(true);            // Zebra striping for readability
+    teamList->setFont(QFont("Courier", 13));
+    teamList->setAlternatingRowColors(true);
     tsLayout->addWidget(teamList);
 
     auto* selectBtn = new QPushButton("Select Team");
-    selectBtn->setFixedHeight(36);
-    selectBtn->setFont(QFont("Helvetica", 13));
+    selectBtn->setObjectName("titleBtnPrimary");
+    selectBtn->setFixedHeight(40);
     tsLayout->addWidget(selectBtn);
-    // Two ways to select: click the button, or double-click a team in the list
     connect(selectBtn, &QPushButton::clicked, this, [this]() {
         int row = teamList->currentRow();
         if (row >= 0) onTeamSelected(row);
@@ -117,229 +103,367 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         if (row >= 0) onTeamSelected(row);
     });
 
-    stack->addWidget(teamSelectPage);
+    outerStack->addWidget(teamSelectPage);
 
-    // ========== MAIN MENU (HOME SCREEN) ==========
-    // Shows your team info at the top, then a vertical list of action buttons.
-    menuPage = new QWidget;
-    auto* menuLayout = new QVBoxLayout(menuPage);
+    // ========================================================================
+    // GAME PAGE (sidebar + top bar + content)
+    // ========================================================================
+    gamePage = new QWidget;
+    auto* gameLayout = new QVBoxLayout(gamePage);
+    gameLayout->setContentsMargins(0, 0, 0, 0);
+    gameLayout->setSpacing(0);
 
-    // Team info label at the top: shows team name, season, budget, formation, league position
-    teamInfoLabel = new QLabel;
-    teamInfoLabel->setFont(QFont("Helvetica", 14));
-    teamInfoLabel->setWordWrap(true);
-    menuLayout->addWidget(teamInfoLabel);
+    // ---- TOP BAR ----
+    auto* topBar = new QWidget;
+    topBar->setObjectName("topBar");
+    topBar->setFixedHeight(52);
+    auto* topBarLayout = new QHBoxLayout(topBar);
+    topBarLayout->setContentsMargins(16, 0, 16, 0);
 
-    menuLayout->addSpacing(10);
+    topBarTeamName = new QLabel;
+    topBarTeamName->setFont(QFont("Helvetica Neue", 16, QFont::Bold));
+    topBarTeamName->setStyleSheet("color: #2dcc73;");
+    topBarLayout->addWidget(topBarTeamName);
 
-    // Build the menu buttons using an array of {text, handler} pairs.
-    // This is cleaner than writing each button individually.
-    struct MenuBtn { QString text; void (MainWindow::*slot)(); };
-    MenuBtn buttons[] = {
-        {"Play Next Match",  &MainWindow::onPlayMatch},
-        {"View Squad",       &MainWindow::onViewSquad},
-        {"Tactics",          &MainWindow::onViewTactics},
-        {"League Table",     &MainWindow::onViewLeagueTable},
-        {"Fixtures & Results", &MainWindow::onViewFixtures},
-        {"Transfer Market",  &MainWindow::onViewTransferMarket},
-        {"Top Scorers",      &MainWindow::onViewTopScorers},
-        {"Save Game",        &MainWindow::onSaveGame},
+    topBarLayout->addStretch();
+
+    topBarInfo = new QLabel;
+    topBarInfo->setFont(QFont("Helvetica Neue", 11));
+    topBarInfo->setStyleSheet("color: #8b949e;");
+    topBarLayout->addWidget(topBarInfo);
+
+    gameLayout->addWidget(topBar);
+
+    // ---- MAIN AREA (sidebar + content) ----
+    auto* mainArea = new QWidget;
+    auto* mainLayout = new QHBoxLayout(mainArea);
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+
+    // ---- SIDEBAR ----
+    sidebar = new QWidget;
+    sidebar->setObjectName("sidebar");
+    sidebar->setFixedWidth(170);
+    auto* sidebarLayout = new QVBoxLayout(sidebar);
+    sidebarLayout->setContentsMargins(0, 8, 0, 8);
+    sidebarLayout->setSpacing(0);
+
+    // Sidebar navigation buttons
+    struct NavItem { QString text; };
+    NavItem navItems[] = {
+        {"Home"},
+        {"Squad"},
+        {"Tactics"},
+        {"League Table"},
+        {"Fixtures"},
+        {"Transfers"},
+        {"Top Scorers"},
     };
 
-    auto* btnGrid = new QVBoxLayout;
-    for (auto& b : buttons) {
-        auto* btn = new QPushButton(b.text);
-        btn->setFixedHeight(36);
-        btn->setFont(QFont("Helvetica", 13));
-        btnGrid->addWidget(btn);
-        connect(btn, &QPushButton::clicked, this, b.slot);
+    for (int i = 0; i < NUM_NAV_BTNS; i++) {
+        navBtns[i] = new QPushButton(navItems[i].text);
+        navBtns[i]->setObjectName("sidebarBtn");
+        navBtns[i]->setCursor(Qt::PointingHandCursor);
+        sidebarLayout->addWidget(navBtns[i]);
+        int pageIdx = i;
+        connect(navBtns[i], &QPushButton::clicked, this, [this, pageIdx]() {
+            navigateTo(pageIdx);
+        });
     }
-    menuLayout->addLayout(btnGrid);
-    menuLayout->addStretch();  // Push everything up, leave empty space at the bottom
 
-    stack->addWidget(menuPage);
+    sidebarLayout->addStretch();
 
-    // ========== SUB-WIDGETS ==========
-    // Each sub-screen is a custom widget that's created once and reused.
-    // When navigating to a screen, we call its refresh() method with current data,
-    // then switch the QStackedWidget to show it.
-    // Each widget emits a backClicked() signal that we connect to onBackToMenu().
+    // Play Match — special green accent button
+    playMatchBtn = new QPushButton("Play Match");
+    playMatchBtn->setObjectName("playMatchBtn");
+    playMatchBtn->setCursor(Qt::PointingHandCursor);
+    connect(playMatchBtn, &QPushButton::clicked, this, &MainWindow::onPlayMatch);
+    sidebarLayout->addWidget(playMatchBtn);
+    sidebarLayout->addSpacing(6);
 
+    // Save Game — subtle button at the bottom
+    saveGameBtn = new QPushButton("Save Game");
+    saveGameBtn->setObjectName("saveBtn");
+    saveGameBtn->setCursor(Qt::PointingHandCursor);
+    connect(saveGameBtn, &QPushButton::clicked, this, &MainWindow::onSaveGame);
+    sidebarLayout->addWidget(saveGameBtn);
+
+    mainLayout->addWidget(sidebar);
+
+    // ---- CONTENT STACK ----
+    contentStack = new QStackedWidget;
+    mainLayout->addWidget(contentStack);
+
+    gameLayout->addWidget(mainArea);
+    outerStack->addWidget(gamePage);
+
+    // ========================================================================
+    // DASHBOARD PAGE (Home)
+    // ========================================================================
+    dashboardPage = new QWidget;
+    auto* dashLayout = new QVBoxLayout(dashboardPage);
+    dashLayout->setContentsMargins(24, 20, 24, 20);
+    dashboardLabel = new QLabel;
+    dashboardLabel->setFont(QFont("Helvetica Neue", 12));
+    dashboardLabel->setWordWrap(true);
+    dashboardLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+    dashLayout->addWidget(dashboardLabel);
+    dashLayout->addStretch();
+    contentStack->addWidget(dashboardPage);
+    navPages[0] = dashboardPage;
+
+    // ========================================================================
+    // SUB-WIDGETS — created once, added to content stack
+    // ========================================================================
     squadWidget = new SquadWidget;
-    connect(squadWidget, &SquadWidget::backClicked, this, &MainWindow::onBackToMenu);
     connect(squadWidget, &SquadWidget::playerSelected, this, &MainWindow::onPlayerSelected);
-    stack->addWidget(squadWidget);
-
-    // Player profile: when "Back to Squad" is clicked, refresh the squad and go back to it
-    playerProfileWidget = new PlayerProfileWidget;
-    connect(playerProfileWidget, &PlayerProfileWidget::backClicked, this, [this]() {
-        squadWidget->refresh(league.teams[playerTeamIdx]);
-        stack->setCurrentWidget(squadWidget);
-    });
-    stack->addWidget(playerProfileWidget);
-
-    leagueTableWidget = new LeagueTableWidget;
-    connect(leagueTableWidget, &LeagueTableWidget::backClicked, this, &MainWindow::onBackToMenu);
-    stack->addWidget(leagueTableWidget);
+    contentStack->addWidget(squadWidget);
+    navPages[1] = squadWidget;
 
     tacticsWidget = new TacticsWidget;
-    connect(tacticsWidget, &TacticsWidget::backClicked, this, &MainWindow::onBackToMenu);
-    stack->addWidget(tacticsWidget);
+    contentStack->addWidget(tacticsWidget);
+    navPages[2] = tacticsWidget;
 
-    matchWidget = new MatchWidget;
-    connect(matchWidget, &MatchWidget::matchFinished, this, &MainWindow::onMatchFinished);
-    stack->addWidget(matchWidget);
-
-    transferWidget = new TransferWidget;
-    connect(transferWidget, &TransferWidget::backClicked, this, &MainWindow::onBackToMenu);
-    stack->addWidget(transferWidget);
-
-    topScorersWidget = new TopScorersWidget;
-    connect(topScorersWidget, &TopScorersWidget::backClicked, this, &MainWindow::onBackToMenu);
-    stack->addWidget(topScorersWidget);
+    leagueTableWidget = new LeagueTableWidget;
+    contentStack->addWidget(leagueTableWidget);
+    navPages[3] = leagueTableWidget;
 
     fixturesWidget = new FixturesWidget;
-    connect(fixturesWidget, &FixturesWidget::backClicked, this, &MainWindow::onBackToMenu);
-    stack->addWidget(fixturesWidget);
+    contentStack->addWidget(fixturesWidget);
+    navPages[4] = fixturesWidget;
 
-    // Start on the title screen
+    transferWidget = new TransferWidget;
+    contentStack->addWidget(transferWidget);
+    navPages[5] = transferWidget;
+
+    topScorersWidget = new TopScorersWidget;
+    contentStack->addWidget(topScorersWidget);
+    navPages[6] = topScorersWidget;
+
+    // Player profile — accessed via squad double-click, not a sidebar button
+    playerProfileWidget = new PlayerProfileWidget;
+    connect(playerProfileWidget, &PlayerProfileWidget::backClicked, this, [this]() {
+        navigateTo(1); // Back to squad
+    });
+    contentStack->addWidget(playerProfileWidget);
+
+    // Match widget — accessed via Play Match button, not a sidebar button
+    matchWidget = new MatchWidget;
+    connect(matchWidget, &MatchWidget::matchFinished, this, &MainWindow::onMatchFinished);
+    contentStack->addWidget(matchWidget);
+
     showTitleScreen();
 }
 
-// Switches the visible page to the title screen.
-void MainWindow::showTitleScreen() {
-    stack->setCurrentWidget(titlePage);
+// ============================================================================
+// NAVIGATION
+// ============================================================================
+// Switches the content area to the requested page and highlights the active sidebar button.
+// Also refreshes the target widget with current data so it's always up-to-date.
+void MainWindow::navigateTo(int pageIndex) {
+    // Update sidebar button highlighting
+    for (int i = 0; i < NUM_NAV_BTNS; i++) {
+        navBtns[i]->setProperty("active", i == pageIndex);
+        // Force Qt to re-evaluate the stylesheet for this widget
+        navBtns[i]->style()->unpolish(navBtns[i]);
+        navBtns[i]->style()->polish(navBtns[i]);
+    }
+
+    // Refresh the target widget with current data before showing it
+    auto& team = league.teams[playerTeamIdx];
+    switch (pageIndex) {
+        case 0: updateDashboard(); break;
+        case 1: squadWidget->refresh(team); break;
+        case 2: tacticsWidget->refresh(team); break;
+        case 3: leagueTableWidget->refresh(league); break;
+        case 4: fixturesWidget->refresh(league, playerTeamIdx); break;
+        case 5: transferWidget->refresh(league, market, playerTeamIdx); break;
+        case 6: topScorersWidget->refresh(league); break;
+    }
+
+    contentStack->setCurrentWidget(navPages[pageIndex]);
+    updateTopBar();
 }
 
 // ============================================================================
-// NEW GAME
+// TOP BAR UPDATE
 // ============================================================================
-// Creates a fresh league (16 teams, blank table, new schedule) and shows team selection.
+void MainWindow::updateTopBar() {
+    auto& team = league.teams[playerTeamIdx];
+    topBarTeamName->setText(QString::fromStdString(team.name).toUpper());
+
+    int leaguePos = 0, pts = 0;
+    for (int i = 0; i < (int)league.table.size(); i++) {
+        if (league.table[i].teamIdx == playerTeamIdx) {
+            leaguePos = i + 1;
+            pts = league.table[i].points();
+            break;
+        }
+    }
+
+    int week = league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1;
+    topBarInfo->setText(QString("Season %1  |  Week %2/%3  |  Budget: £%4k  |  %5%6 (%7 pts)")
+        .arg(league.season)
+        .arg(week)
+        .arg(league.totalWeeks())
+        .arg(team.budget / 1000)
+        .arg(leaguePos)
+        .arg(leaguePos == 1 ? "st" : leaguePos == 2 ? "nd" : leaguePos == 3 ? "rd" : "th")
+        .arg(pts));
+
+    statusBar()->showMessage(QString("%1  |  Season %2  |  Week %3/%4")
+        .arg(QString::fromStdString(team.name))
+        .arg(league.season).arg(week).arg(league.totalWeeks()));
+}
+
+// ============================================================================
+// DASHBOARD (Home page content)
+// ============================================================================
+void MainWindow::updateDashboard() {
+    auto& team = league.teams[playerTeamIdx];
+
+    int leaguePos = 0, pts = 0, won = 0, drawn = 0, lost = 0, gf = 0, ga = 0;
+    for (auto& e : league.table) {
+        if (e.teamIdx == playerTeamIdx) {
+            leaguePos = (&e - &league.table[0]) + 1;
+            pts = e.points();
+            won = e.won; drawn = e.drawn; lost = e.lost;
+            gf = e.goalsFor; ga = e.goalsAgainst;
+            break;
+        }
+    }
+
+    // Next match info
+    QString nextMatch = "Season complete";
+    if (!league.seasonComplete()) {
+        auto& fixtures = league.schedule[league.currentWeek];
+        for (auto& f : fixtures) {
+            if (f.homeTeamIdx == playerTeamIdx) {
+                nextMatch = QString("vs %1 (Home)")
+                    .arg(QString::fromStdString(league.teams[f.awayTeamIdx].name));
+                break;
+            }
+            if (f.awayTeamIdx == playerTeamIdx) {
+                nextMatch = QString("vs %1 (Away)")
+                    .arg(QString::fromStdString(league.teams[f.homeTeamIdx].name));
+                break;
+            }
+        }
+    }
+
+    int week = league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1;
+
+    QString html = QString(
+        "<div style='margin-bottom: 20px;'>"
+        "<span style='font-size: 24px; font-weight: bold; color: #2dcc73;'>%1</span><br>"
+        "<span style='color: #6b7c93;'>Season %2 — Week %3 of %4</span>"
+        "</div>"
+        "<table cellpadding='6' cellspacing='0' style='font-size: 13px;'>"
+        "<tr><td style='color: #6b7c93;'>League Position</td>"
+            "<td style='font-weight: bold; color: #ffffff; padding-left: 20px;'>%5 / %6</td></tr>"
+        "<tr><td style='color: #6b7c93;'>Points</td>"
+            "<td style='font-weight: bold; color: #ffffff; padding-left: 20px;'>%7</td></tr>"
+        "<tr><td style='color: #6b7c93;'>Record</td>"
+            "<td style='padding-left: 20px;'>"
+            "<span style='color: #2dcc73;'>%8W</span>&nbsp;&nbsp;"
+            "<span style='color: #c8d6e5;'>%9D</span>&nbsp;&nbsp;"
+            "<span style='color: #e05555;'>%10L</span></td></tr>"
+        "<tr><td style='color: #6b7c93;'>Goal Difference</td>"
+            "<td style='padding-left: 20px;'>%11 (%12 scored, %13 conceded)</td></tr>"
+        "<tr><td style='color: #6b7c93;'>Formation</td>"
+            "<td style='padding-left: 20px;'>%14</td></tr>"
+        "<tr><td style='color: #6b7c93;'>Play Style</td>"
+            "<td style='padding-left: 20px;'>%15</td></tr>"
+        "<tr><td style='color: #6b7c93;'>Budget</td>"
+            "<td style='font-weight: bold; padding-left: 20px;'>£%16k</td></tr>"
+        "</table>"
+        "<div style='margin-top: 24px;'>"
+        "<span style='font-size: 15px; font-weight: bold; color: #c8d6e5;'>Next Match</span><br>"
+        "<span style='font-size: 14px; color: #2dcc73;'>%17</span>"
+        "</div>")
+        .arg(QString::fromStdString(team.name))
+        .arg(league.season).arg(week).arg(league.totalWeeks())
+        .arg(leaguePos).arg(league.teams.size())
+        .arg(pts)
+        .arg(won).arg(drawn).arg(lost)
+        .arg(gf - ga > 0 ? QString("+%1").arg(gf - ga) : QString::number(gf - ga))
+        .arg(gf).arg(ga)
+        .arg(QString::fromStdString(team.tactics.formationStr()))
+        .arg(QString::fromStdString(team.tactics.playStyleStr()))
+        .arg(team.budget / 1000)
+        .arg(nextMatch);
+
+    dashboardLabel->setText(html);
+}
+
+// ============================================================================
+// SIDEBAR ENABLE/DISABLE (used during matches)
+// ============================================================================
+void MainWindow::setSidebarEnabled(bool enabled) {
+    for (int i = 0; i < NUM_NAV_BTNS; i++) {
+        navBtns[i]->setEnabled(enabled);
+    }
+    playMatchBtn->setEnabled(enabled);
+    saveGameBtn->setEnabled(enabled);
+}
+
+// ============================================================================
+// SCREEN SWITCHING
+// ============================================================================
+void MainWindow::showTitleScreen() {
+    outerStack->setCurrentWidget(titlePage);
+}
+
+void MainWindow::showTeamSelect() {
+    teamList->clear();
+    for (int i = 0; i < (int)league.teams.size(); i++) {
+        auto& team = league.teams[i];
+        QString entry = QString("%1.  %2    OVR: %3   Budget: £%4k")
+            .arg(i + 1, 2)
+            .arg(QString::fromStdString(team.name), -22)
+            .arg(team.averageOverall(), 0, 'f', 0)
+            .arg(team.budget / 1000);
+        teamList->addItem(entry);
+    }
+    teamList->setCurrentRow(0);
+    outerStack->setCurrentWidget(teamSelectPage);
+}
+
+void MainWindow::showGameUI() {
+    outerStack->setCurrentWidget(gamePage);
+    navigateTo(0);
+}
+
+// ============================================================================
+// GAME FLOW
+// ============================================================================
 void MainWindow::onNewGame() {
     league.initialize();
     showTeamSelect();
 }
 
-// ============================================================================
-// LOAD GAME
-// ============================================================================
-// Attempts to load a saved game from the default save file.
-// If successful, goes straight to the main menu. If not, shows an info dialog.
 void MainWindow::onLoadGame() {
     if (SaveLoad::loadGame(league, playerTeamIdx, SaveLoad::defaultSavePath())) {
         market.generateListings(league, playerTeamIdx);
-        showMainMenu();
+        showGameUI();
     } else {
         QMessageBox::information(this, "Load Game", "No save file found.");
     }
 }
 
-// ============================================================================
-// SHOW TEAM SELECT
-// ============================================================================
-// Populates the team list and switches to the team selection screen.
-// Each row shows: rank, team name, average overall rating, and budget.
-void MainWindow::showTeamSelect() {
-    teamList->clear();
-    for (int i = 0; i < (int)league.teams.size(); i++) {
-        auto& team = league.teams[i];
-        // Format: "  1.  Alderwick City            OVR: 14   Budget: £10000k"
-        QString entry = QString("%1.  %2    OVR: %3   Budget: £%4k")
-            .arg(i + 1, 2)                                          // Right-padded rank number
-            .arg(QString::fromStdString(team.name), -22)            // Left-aligned team name (22 chars)
-            .arg(team.averageOverall(), 0, 'f', 0)                  // Overall rating, no decimal
-            .arg(team.budget / 1000);                                // Budget in thousands
-        teamList->addItem(entry);
-    }
-    teamList->setCurrentRow(0);  // Pre-select the first team
-    stack->setCurrentWidget(teamSelectPage);
-}
-
-// ============================================================================
-// ON TEAM SELECTED
-// ============================================================================
-// Called when the player picks a team. Stores their choice, generates the initial
-// transfer market, shows a welcome message, and navigates to the main menu.
 void MainWindow::onTeamSelected(int index) {
     playerTeamIdx = index;
     market.generateListings(league, playerTeamIdx);
 
-    // Welcome popup with the team's name, budget, and squad size
     QMessageBox::information(this, "Welcome!",
         QString("You are now the manager of %1!\n\nBudget: £%2k\nSquad size: %3 players")
             .arg(QString::fromStdString(league.teams[playerTeamIdx].name))
             .arg(league.teams[playerTeamIdx].budget / 1000)
             .arg(league.teams[playerTeamIdx].squad.size()));
 
-    showMainMenu();
+    showGameUI();
 }
 
-// ============================================================================
-// SHOW MAIN MENU
-// ============================================================================
-// Updates the team info display and switches to the main menu screen.
-// The info label shows the team name, season, week, budget, formation, play style,
-// and current league position.
-void MainWindow::showMainMenu() {
-    updateStatusBar();
-
-    auto& team = league.teams[playerTeamIdx];
-
-    // Find the player's position in the league table
-    int leaguePos = 0;
-    int pts = 0;
-    for (int i = 0; i < (int)league.table.size(); i++) {
-        if (league.table[i].teamIdx == playerTeamIdx) {
-            leaguePos = i + 1;  // 1-indexed for display
-            pts = league.table[i].points();
-            break;
-        }
-    }
-
-    // Build HTML-formatted team info string
-    QString info = QString(
-        "<h2>%1</h2>"
-        "<p><b>Season %2</b> — Week %3 of %4</p>"
-        "<p>Budget: <b>£%5k</b> | Formation: <b>%6</b> | "
-        "Style: <b>%7</b></p>"
-        "<p>League Position: <b>%8 / %9</b> (%10 pts)</p>")
-        .arg(QString::fromStdString(team.name))
-        .arg(league.season)
-        .arg(league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1)
-        .arg(league.totalWeeks())
-        .arg(team.budget / 1000)
-        .arg(QString::fromStdString(team.tactics.formationStr()))
-        .arg(QString::fromStdString(team.tactics.playStyleStr()))
-        .arg(leaguePos).arg(league.teams.size())
-        .arg(pts);
-
-    teamInfoLabel->setText(info);
-    stack->setCurrentWidget(menuPage);
-}
-
-// Updates the status bar at the bottom of the window with team name, season, and week.
-void MainWindow::updateStatusBar() {
-    auto& team = league.teams[playerTeamIdx];
-    statusBar()->showMessage(
-        QString("%1 | Season %2 | Week %3/%4")
-            .arg(QString::fromStdString(team.name))
-            .arg(league.season)
-            .arg(league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1)
-            .arg(league.totalWeeks()));
-}
-
-// ============================================================================
-// PLAY MATCH
-// ============================================================================
-// Simulates all AI matches for the current week instantly, then starts the player's
-// match with live commentary on the match screen.
-//
-// Flow:
-//   1. If the season is complete, trigger end-of-season instead
-//   2. Find which fixture involves the player's team
-//   3. Simulate all OTHER fixtures instantly (no commentary needed)
-//   4. Start the player's match on the MatchWidget with live event playback
-//   5. Advance the week counter
 void MainWindow::onPlayMatch() {
     if (league.seasonComplete()) {
         onEndOfSeason();
@@ -348,7 +472,6 @@ void MainWindow::onPlayMatch() {
 
     auto& fixtures = league.currentFixtures();
 
-    // Find the player's fixture
     int playerFixtureIdx = -1;
     for (int i = 0; i < (int)fixtures.size(); i++) {
         if (fixtures[i].homeTeamIdx == playerTeamIdx || fixtures[i].awayTeamIdx == playerTeamIdx) {
@@ -356,32 +479,29 @@ void MainWindow::onPlayMatch() {
         }
     }
 
-    // Simulate all AI matches (non-player fixtures) instantly
+    // Simulate AI matches
     for (int i = 0; i < (int)fixtures.size(); i++) {
-        if (i == playerFixtureIdx) continue;  // Skip the player's match
+        if (i == playerFixtureIdx) continue;
         auto& f = fixtures[i];
         f.result = engine.simulate(league.teams[f.homeTeamIdx], league.teams[f.awayTeamIdx]);
         f.played = true;
-        league.updateTable(f);  // Immediately update the table for AI matches
+        league.updateTable(f);
     }
 
-    // Start the player's match with live commentary
+    // Start player's match
     if (playerFixtureIdx >= 0) {
         auto& f = fixtures[playerFixtureIdx];
         matchWidget->startMatch(league, engine, f, playerFixtureIdx);
-        stack->setCurrentWidget(matchWidget);
+        contentStack->setCurrentWidget(matchWidget);
+        setSidebarEnabled(false);
     }
 
-    league.currentWeek++;  // Advance to the next week
+    league.currentWeek++;
 }
 
-// ============================================================================
-// ON MATCH FINISHED
-// ============================================================================
-// Called when the player clicks "Continue" after their match ends.
-// Updates the league table for the player's match result, then returns to the main menu.
-// (AI matches were already updated in onPlayMatch.)
 void MainWindow::onMatchFinished() {
+    setSidebarEnabled(true);
+
     int prevWeek = league.currentWeek - 1;
     if (prevWeek >= 0 && prevWeek < (int)league.schedule.size()) {
         for (auto& f : league.schedule[prevWeek]) {
@@ -391,42 +511,7 @@ void MainWindow::onMatchFinished() {
             }
         }
     }
-    showMainMenu();
-}
-
-// ============================================================================
-// NAVIGATION HANDLERS
-// ============================================================================
-// Each of these refreshes the target widget with current data, then switches to it.
-
-void MainWindow::onViewSquad() {
-    squadWidget->refresh(league.teams[playerTeamIdx]);
-    stack->setCurrentWidget(squadWidget);
-}
-
-void MainWindow::onViewTactics() {
-    tacticsWidget->refresh(league.teams[playerTeamIdx]);
-    stack->setCurrentWidget(tacticsWidget);
-}
-
-void MainWindow::onViewLeagueTable() {
-    leagueTableWidget->refresh(league);
-    stack->setCurrentWidget(leagueTableWidget);
-}
-
-void MainWindow::onViewFixtures() {
-    fixturesWidget->refresh(league, playerTeamIdx);
-    stack->setCurrentWidget(fixturesWidget);
-}
-
-void MainWindow::onViewTransferMarket() {
-    transferWidget->refresh(league, market, playerTeamIdx);
-    stack->setCurrentWidget(transferWidget);
-}
-
-void MainWindow::onViewTopScorers() {
-    topScorersWidget->refresh(league);
-    stack->setCurrentWidget(topScorersWidget);
+    navigateTo(0);
 }
 
 void MainWindow::onSaveGame() {
@@ -437,55 +522,25 @@ void MainWindow::onSaveGame() {
     }
 }
 
-// Goes back to the main menu from any sub-screen.
-void MainWindow::onBackToMenu() {
-    showMainMenu();
-}
-
-// ============================================================================
-// ON PLAYER SELECTED
-// ============================================================================
-// Called when the player double-clicks a player in the squad list.
-// Checks if the selected player is in the starting XI, then shows their profile.
 void MainWindow::onPlayerSelected(int squadIndex) {
     auto& team = league.teams[playerTeamIdx];
     if (squadIndex < 0 || squadIndex >= (int)team.squad.size()) return;
 
-    // Check if this player is in the starting XI
     auto xi = team.getStartingEleven();
     bool isStarter = std::find(xi.begin(), xi.end(), squadIndex) != xi.end();
 
     playerProfileWidget->refresh(team.squad[squadIndex], team.name, isStarter);
-    stack->setCurrentWidget(playerProfileWidget);
+    contentStack->setCurrentWidget(playerProfileWidget);
+    // Keep "Squad" highlighted since player profile is a sub-view of squad
 }
 
-// ============================================================================
-// END OF SEASON
-// ============================================================================
-// Called when all 30 weeks have been played. Handles the transition to the next season.
-//
-// Steps:
-//   1. Show who won the league and where the player finished
-//   2. Ask if the player wants to continue to the next season
-//   3. If yes:
-//      a. Increment the season counter
-//      b. Age all players by 1 year
-//      c. Reset all season stats (goals, assists, appearances) to 0
-//      d. Retire any players over 36 (remove them from squads)
-//      e. If any team has fewer than 16 players (after retirements), generate
-//         new young players to fill the gaps (youth academy regen)
-//      f. Reset the league table to all zeros
-//      g. Generate a fresh schedule for the new season
-//      h. Refresh the transfer market
 void MainWindow::onEndOfSeason() {
-    // Find the champion and the player's finishing position
     QString champion = QString::fromStdString(league.teams[league.table[0].teamIdx].name);
     int playerPos = 0;
     for (int i = 0; i < (int)league.table.size(); i++) {
         if (league.table[i].teamIdx == playerTeamIdx) { playerPos = i + 1; break; }
     }
 
-    // Build the end-of-season message
     QString msg = QString("Season %1 Complete!\n\nChampions: %2\nYour finish: %3")
         .arg(league.season).arg(champion).arg(playerPos);
     if (playerPos == 1) msg += "\n\nCONGRATULATIONS - YOU ARE CHAMPIONS!";
@@ -500,22 +555,14 @@ void MainWindow::onEndOfSeason() {
         std::mt19937 gen(std::random_device{}());
 
         for (auto& team : league.teams) {
-            // Reset stats and age all players
             for (auto& p : team.squad) {
                 p.goals = 0; p.assists = 0; p.appearances = 0; p.age++;
             }
-            // Retire players over 36 — remove them from the squad entirely.
-            // Uses the erase-remove idiom: remove_if moves retirees to the end,
-            // then erase chops them off.
             team.squad.erase(
                 std::remove_if(team.squad.begin(), team.squad.end(),
                     [](const Player& p) { return p.age > 36; }),
                 team.squad.end());
 
-            // Youth academy regen: if the squad is too small after retirements,
-            // generate new players to bring it back up to at least 16.
-            // New players are slightly below the team average (quality -3 to +1),
-            // representing young academy graduates who aren't quite first-team level yet.
             while ((int)team.squad.size() < 16) {
                 Position pos;
                 int r = std::uniform_int_distribution<>(0, 3)(gen);
@@ -531,13 +578,12 @@ void MainWindow::onEndOfSeason() {
             }
         }
 
-        // Reset the league table to all zeros for the new season
         league.table.clear();
         for (int i = 0; i < (int)league.teams.size(); i++) {
             LeagueEntry entry; entry.teamIdx = i; league.table.push_back(entry);
         }
-        league.generateSchedule();  // New schedule for the new season
-        market.refreshListings(league, playerTeamIdx);  // Fresh transfer market
-        showMainMenu();
+        league.generateSchedule();
+        market.refreshListings(league, playerTeamIdx);
+        navigateTo(0);
     }
 }

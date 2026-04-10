@@ -7,7 +7,6 @@
 #include "TopScorersWidget.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QPushButton>
 #include <QLabel>
 #include <algorithm>
 
@@ -25,11 +24,6 @@ TopScorersWidget::TopScorersWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));
     table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(table);
-
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &TopScorersWidget::backClicked);
-    layout->addWidget(backBtn);
 }
 
 // ============================================================================

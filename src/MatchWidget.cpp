@@ -156,7 +156,7 @@ void MatchWidget::showNextEvent() {
     QString line;
     if (event.isGoal) {
         // GOAL! Red, bold, larger font, with a football emoji
-        line = QString("<br><b style='color: #d00; font-size: 14px;'>⚽ %1'  %2</b><br>")
+        line = QString("<br><b style='color: #2dcc73; font-size: 14px;'>⚽ %1'  %2</b><br>")
             .arg(event.minute)
             .arg(QString::fromStdString(event.description));
         eventTimer->setInterval(1500);  // Pause longer on goals for dramatic effect

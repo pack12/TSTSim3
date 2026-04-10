@@ -109,7 +109,7 @@ QWidget* PlayerProfileWidget::buildAttrBar(const QString& label, int value, int 
 
     // Apply the color via stylesheet (Qt's way of styling widgets)
     bar->setStyleSheet(QString(
-        "QProgressBar { background: #e0e0e0; border: 1px solid #ccc; border-radius: 3px; }"
+        "QProgressBar { background: #1a2d42; border: 1px solid #1e3048; border-radius: 3px; }"
         "QProgressBar::chunk { background: %1; border-radius: 2px; }")
         .arg(color.name()));
 
@@ -212,7 +212,7 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
     // If the player has appearances, show goals per game ratio
     if (player.appearances > 0) {
         float goalsPerGame = (float)player.goals / player.appearances;
-        stats += QString("<p style='color:#666;'>Goals per game: %1</p>")
+        stats += QString("<p style='color:#8b949e;'>Goals per game: %1</p>")
             .arg(goalsPerGame, 0, 'f', 2);
     }
 

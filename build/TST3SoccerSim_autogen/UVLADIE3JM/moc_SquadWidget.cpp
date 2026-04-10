@@ -40,18 +40,15 @@ template <> constexpr inline auto SquadWidget::qt_create_metaobjectdata<qt_meta_
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "SquadWidget",
-        "backClicked",
-        "",
         "playerSelected",
+        "",
         "squadIndex"
     };
 
     QtMocHelpers::UintData qt_methods {
-        // Signal 'backClicked'
-        QtMocHelpers::SignalData<void()>(1, 2, QMC::AccessPublic, QMetaType::Void),
         // Signal 'playerSelected'
-        QtMocHelpers::SignalData<void(int)>(3, 2, QMC::AccessPublic, QMetaType::Void, {{
-            { QMetaType::Int, 4 },
+        QtMocHelpers::SignalData<void(int)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 3 },
         }}),
     };
     QtMocHelpers::UintData qt_properties {
@@ -76,15 +73,12 @@ void SquadWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id,
     auto *_t = static_cast<SquadWidget *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->backClicked(); break;
-        case 1: _t->playerSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 0: _t->playerSelected((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::IndexOfMethod) {
-        if (QtMocHelpers::indexOfMethod<void (SquadWidget::*)()>(_a, &SquadWidget::backClicked, 0))
-            return;
-        if (QtMocHelpers::indexOfMethod<void (SquadWidget::*)(int )>(_a, &SquadWidget::playerSelected, 1))
+        if (QtMocHelpers::indexOfMethod<void (SquadWidget::*)(int )>(_a, &SquadWidget::playerSelected, 0))
             return;
     }
 }
@@ -108,27 +102,21 @@ int SquadWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 2)
+        if (_id < 1)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 2;
+        _id -= 1;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 2)
+        if (_id < 1)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 2;
+        _id -= 1;
     }
     return _id;
 }
 
 // SIGNAL 0
-void SquadWidget::backClicked()
-{
-    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
-}
-
-// SIGNAL 1
 void SquadWidget::playerSelected(int _t1)
 {
-    QMetaObject::activate<void>(this, &staticMetaObject, 1, nullptr, _t1);
+    QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
 }
 QT_WARNING_POP
