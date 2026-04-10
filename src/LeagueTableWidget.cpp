@@ -8,7 +8,6 @@
 #include "LeagueTableWidget.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QPushButton>
 
 LeagueTableWidget::LeagueTableWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -25,11 +24,6 @@ LeagueTableWidget::LeagueTableWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));
     table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(table);
-
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &LeagueTableWidget::backClicked);
-    layout->addWidget(backBtn);
 }
 
 // ============================================================================
@@ -57,8 +51,8 @@ void LeagueTableWidget::refresh(const League& league) {
             auto* item = new QTableWidgetItem(text);
             item->setTextAlignment(Qt::AlignCenter);
             // Color coding: gold for champions, red for relegation zone
-            if (i == 0) item->setBackground(QColor(255, 215, 0, 60));          // Gold, semi-transparent
-            else if (i >= (int)league.table.size() - 3) item->setBackground(QColor(255, 200, 200));  // Light red
+            if (i == 0) item->setBackground(QColor(70, 55, 0));          // Gold, semi-transparent
+            else if (i >= (int)league.table.size() - 3) item->setBackground(QColor(70, 20, 20));  // Light red
             table->setItem(i, col++, item);
         };
 
@@ -66,8 +60,8 @@ void LeagueTableWidget::refresh(const League& league) {
 
         // Team name gets the same background color but isn't centered (left-aligned by default)
         auto* nameItem = new QTableWidgetItem(QString::fromStdString(team.name));
-        if (i == 0) nameItem->setBackground(QColor(255, 215, 0, 60));
-        else if (i >= (int)league.table.size() - 3) nameItem->setBackground(QColor(255, 200, 200));
+        if (i == 0) nameItem->setBackground(QColor(70, 55, 0));
+        else if (i >= (int)league.table.size() - 3) nameItem->setBackground(QColor(70, 20, 20));
         table->setItem(i, col++, nameItem);
 
         // Statistics columns
@@ -83,8 +77,8 @@ void LeagueTableWidget::refresh(const League& league) {
         auto* ptsItem = new QTableWidgetItem(QString::number(e.points()));
         ptsItem->setTextAlignment(Qt::AlignCenter);
         ptsItem->setFont(QFont("Courier", 12, QFont::Bold));
-        if (i == 0) ptsItem->setBackground(QColor(255, 215, 0, 60));
-        else if (i >= (int)league.table.size() - 3) ptsItem->setBackground(QColor(255, 200, 200));
+        if (i == 0) ptsItem->setBackground(QColor(70, 55, 0));
+        else if (i >= (int)league.table.size() - 3) ptsItem->setBackground(QColor(70, 20, 20));
         table->setItem(i, col, ptsItem);
     }
 

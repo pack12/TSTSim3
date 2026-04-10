@@ -40,22 +40,19 @@ template <> constexpr inline auto TransferWidget::qt_create_metaobjectdata<qt_me
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
         "TransferWidget",
-        "backClicked",
-        "",
         "onBuy",
+        "",
         "onSell",
         "onRefreshListings"
     };
 
     QtMocHelpers::UintData qt_methods {
-        // Signal 'backClicked'
-        QtMocHelpers::SignalData<void()>(1, 2, QMC::AccessPublic, QMetaType::Void),
         // Slot 'onBuy'
-        QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(1, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onSell'
-        QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(3, 2, QMC::AccessPrivate, QMetaType::Void),
         // Slot 'onRefreshListings'
-        QtMocHelpers::SlotData<void()>(5, 2, QMC::AccessPrivate, QMetaType::Void),
+        QtMocHelpers::SlotData<void()>(4, 2, QMC::AccessPrivate, QMetaType::Void),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -79,17 +76,13 @@ void TransferWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _
     auto *_t = static_cast<TransferWidget *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->backClicked(); break;
-        case 1: _t->onBuy(); break;
-        case 2: _t->onSell(); break;
-        case 3: _t->onRefreshListings(); break;
+        case 0: _t->onBuy(); break;
+        case 1: _t->onSell(); break;
+        case 2: _t->onRefreshListings(); break;
         default: ;
         }
     }
-    if (_c == QMetaObject::IndexOfMethod) {
-        if (QtMocHelpers::indexOfMethod<void (TransferWidget::*)()>(_a, &TransferWidget::backClicked, 0))
-            return;
-    }
+    (void)_a;
 }
 
 const QMetaObject *TransferWidget::metaObject() const
@@ -111,21 +104,15 @@ int TransferWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 4)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 4;
+        _id -= 3;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 4)
+        if (_id < 3)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 4;
+        _id -= 3;
     }
     return _id;
-}
-
-// SIGNAL 0
-void TransferWidget::backClicked()
-{
-    QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
 }
 QT_WARNING_POP

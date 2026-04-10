@@ -7,7 +7,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
-#include <QPushButton>
 
 FixturesWidget::FixturesWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -34,11 +33,6 @@ FixturesWidget::FixturesWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));
     table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(table);
-
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &FixturesWidget::backClicked);
-    layout->addWidget(backBtn);
 
     // Connect spinner changes — uses QOverload because QSpinBox::valueChanged has two overloads
     connect(weekSpinner, QOverload<int>::of(&QSpinBox::valueChanged), this, &FixturesWidget::onWeekChanged);
@@ -110,7 +104,7 @@ void FixturesWidget::onWeekChanged(int week) {
 
         // Highlight the player's match in blue with bold text
         if (isPlayerMatch) {
-            QColor highlight(200, 220, 255);  // Light blue
+            QColor highlight(20, 40, 70);  // Dark blue tint for player's match
             homeItem->setBackground(highlight);
             midItem->setBackground(highlight);
             awayItem->setBackground(highlight);

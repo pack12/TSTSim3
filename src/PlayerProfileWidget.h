@@ -26,7 +26,7 @@ public:
     void refresh(const Player& player, const std::string& teamName, bool isStarter);
 
 signals:
-    void backClicked();
+    void backClicked();  // Navigates back to Squad view
 
 private:
     // Builds one attribute bar: a label, a QProgressBar, and a numeric value.

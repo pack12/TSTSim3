@@ -84,11 +84,6 @@ TransferWidget::TransferWidget(QWidget* parent) : QWidget(parent) {
     splitter->setStretchFactor(1, 2);  // Right panel gets 40%
 
     layout->addWidget(splitter);
-
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &TransferWidget::backClicked);
-    layout->addWidget(backBtn);
 }
 
 // ============================================================================

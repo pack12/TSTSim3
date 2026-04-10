@@ -37,7 +37,6 @@ public:
     const Team* currentTeam = nullptr;
 
 signals:
-    void backClicked();                     // Emitted when the "Back" button is clicked
     void playerSelected(int squadIndex);    // Emitted when a player row is double-clicked
 
 private:

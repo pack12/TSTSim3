@@ -1001,7 +1001,4 @@ CMakeFiles/TST3SoccerSim.dir/src/TacticsWidget.cpp.o: \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qformlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QGroupBox \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qgroupbox.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h
+  /opt/homebrew/lib/QtWidgets.framework/Headers/qgroupbox.h

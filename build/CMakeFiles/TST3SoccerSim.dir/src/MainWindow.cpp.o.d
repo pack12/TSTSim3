@@ -1091,4 +1091,5 @@ CMakeFiles/TST3SoccerSim.dir/src/MainWindow.cpp.o: \
   /opt/homebrew/lib/QtCore.framework/Headers/qcoreapplication_platform.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qinputmethod.h \
-  /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication_platform.h
+  /opt/homebrew/lib/QtGui.framework/Headers/qguiapplication_platform.h \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/QStyle

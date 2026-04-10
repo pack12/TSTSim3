@@ -19,7 +19,6 @@
 #include "SquadWidget.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
-#include <QPushButton>
 
 SquadWidget::SquadWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -44,12 +43,6 @@ SquadWidget::SquadWidget(QWidget* parent) : QWidget(parent) {
     valueLabel = new QLabel;
     valueLabel->setFont(QFont("Helvetica", 12));
     layout->addWidget(valueLabel);
-
-    // Back button
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &SquadWidget::backClicked);
-    layout->addWidget(backBtn);
 
     // Double-click handler: read the original squad index from UserRole and emit it
     connect(table, &QTableWidget::cellDoubleClicked, this, [this](int row, int /*col*/) {
@@ -87,8 +80,8 @@ void SquadWidget::refresh(const Team& team) {
     for (int i = 0; i < (int)team.squad.size(); i++) {
         auto& p = team.squad[i];
         bool isStarter = std::find(xi.begin(), xi.end(), i) != xi.end();
-        // Starters get a light green background; subs get white
-        QColor bg = isStarter ? QColor(220, 240, 220) : QColor(255, 255, 255);
+        // Starters get a dark green tint; subs get the base dark background
+        QColor bg = isStarter ? QColor(25, 60, 35) : QColor(14, 22, 33);
         int col = 0;
 
         // Helper lambda: creates a numeric cell with centered text and correct background

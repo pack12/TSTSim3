@@ -22,9 +22,6 @@ public:
     explicit FixturesWidget(QWidget* parent = nullptr);
     void refresh(const League& league, int playerTeamIdx);
 
-signals:
-    void backClicked();
-
 private slots:
     void onWeekChanged(int week);  // Called when the user changes the week spinner
 

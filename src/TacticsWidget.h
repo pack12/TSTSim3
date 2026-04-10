@@ -27,9 +27,6 @@ public:
     explicit TacticsWidget(QWidget* parent = nullptr);
     void refresh(Team& team);
 
-signals:
-    void backClicked();
-
 private:
     // Slot handlers for when the user changes a dropdown selection
     void onFormationChanged(int index);

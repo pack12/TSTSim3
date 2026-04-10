@@ -27,9 +27,6 @@ public:
     explicit TransferWidget(QWidget* parent = nullptr);
     void refresh(League& league, TransferMarket& market, int playerTeamIdx);
 
-signals:
-    void backClicked();
-
 private slots:
     void onBuy();               // Buy the selected player from the market
     void onSell();              // Sell the selected player from your squad

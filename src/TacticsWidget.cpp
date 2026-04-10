@@ -7,7 +7,6 @@
 #include <QVBoxLayout>
 #include <QFormLayout>
 #include <QGroupBox>
-#include <QPushButton>
 
 TacticsWidget::TacticsWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -45,11 +44,6 @@ TacticsWidget::TacticsWidget(QWidget* parent) : QWidget(parent) {
     layout->addWidget(summaryLabel);
 
     layout->addStretch();
-
-    auto* backBtn = new QPushButton("Back");
-    backBtn->setFixedWidth(100);
-    connect(backBtn, &QPushButton::clicked, this, &TacticsWidget::backClicked);
-    layout->addWidget(backBtn);
 
     // Connect dropdown changes to handlers.
     // We use the QOverload template because QComboBox::currentIndexChanged has two overloads
