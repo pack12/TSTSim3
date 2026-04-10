@@ -1,0 +1,2 @@
+set(__QT_DEPLOY_TARGET_TST3SoccerSim_FILE /Users/johnk/TST3SoccerSim/build/TST3SoccerSim)
+set(__QT_DEPLOY_TARGET_TST3SoccerSim_TYPE EXECUTABLE)
