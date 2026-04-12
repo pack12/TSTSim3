@@ -40,6 +40,7 @@ private slots:
 private:
     QLabel* scoreLabel = nullptr;           // "Alderwick City  2 - 1  Glendale Rovers" at the top
     QTextEdit* commentaryBox = nullptr;     // Scrolling text area for match commentary
+    QPushButton* pauseBtn = nullptr;        // Pause/Resume toggle — visible during match, hidden after
     QPushButton* continueBtn = nullptr;     // "Continue" button — only visible after full time
     QLabel* otherResultsLabel = nullptr;    // Other league results — shown after full time
     QTimer* eventTimer = nullptr;           // Timer that fires to show the next event

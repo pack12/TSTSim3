@@ -3303,12 +3303,10 @@ CMakeFiles/TST3SoccerSim.dir/src/FixturesWidget.cpp.o: /Users/johnk/TST3SoccerSi
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHeaderView \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLabel \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QSpinBox \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTableWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemview.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
@@ -3321,7 +3319,6 @@ CMakeFiles/TST3SoccerSim.dir/src/FixturesWidget.cpp.o: /Users/johnk/TST3SoccerSi
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlabel.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayoutitem.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qsizepolicy.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qslider.h \
@@ -5147,11 +5144,9 @@ CMakeFiles/TST3SoccerSim.dir/src/LeagueTableWidget.cpp.o: /Users/johnk/TST3Socce
   /opt/homebrew/lib/QtGui.framework/Headers/qwindowdefs.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHeaderView \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLabel \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTableWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemview.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
@@ -5164,7 +5159,6 @@ CMakeFiles/TST3SoccerSim.dir/src/LeagueTableWidget.cpp.o: /Users/johnk/TST3Socce
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlabel.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayoutitem.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qsizepolicy.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qslider.h \
@@ -6230,6 +6224,7 @@ CMakeFiles/TST3SoccerSim.dir/src/MainWindow.cpp.o: /Users/johnk/TST3SoccerSim/sr
   /opt/homebrew/lib/QtWidgets.framework/Headers/QSpinBox \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QStackedWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QStatusBar \
+  /opt/homebrew/lib/QtWidgets.framework/Headers/QStyle \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTableWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTextEdit \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
@@ -11742,11 +11737,9 @@ CMakeFiles/TST3SoccerSim.dir/src/SquadWidget.cpp.o: /Users/johnk/TST3SoccerSim/s
   /opt/homebrew/lib/QtGui.framework/Headers/qwindowdefs.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHeaderView \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLabel \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTableWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemview.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
@@ -11759,7 +11752,6 @@ CMakeFiles/TST3SoccerSim.dir/src/SquadWidget.cpp.o: /Users/johnk/TST3SoccerSim/s
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlabel.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayoutitem.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qsizepolicy.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qslider.h \
@@ -13507,10 +13499,8 @@ CMakeFiles/TST3SoccerSim.dir/src/TacticsWidget.cpp.o: /Users/johnk/TST3SoccerSim
   /opt/homebrew/lib/QtWidgets.framework/Headers/QGroupBox \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLabel \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLayout \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractslider.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractspinbox.h \
@@ -13523,7 +13513,6 @@ CMakeFiles/TST3SoccerSim.dir/src/TacticsWidget.cpp.o: /Users/johnk/TST3SoccerSim
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlabel.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayoutitem.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qsizepolicy.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qslider.h \
@@ -15345,11 +15334,9 @@ CMakeFiles/TST3SoccerSim.dir/src/TopScorersWidget.cpp.o: /Users/johnk/TST3Soccer
   /opt/homebrew/lib/QtGui.framework/Headers/qwindowdefs.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QHeaderView \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QLabel \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/QPushButton \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QTableWidget \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QWidget \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemdelegate.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractitemview.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qabstractscrollarea.h \
@@ -15362,7 +15349,6 @@ CMakeFiles/TST3SoccerSim.dir/src/TopScorersWidget.cpp.o: /Users/johnk/TST3Soccer
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlabel.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayoutitem.h \
-  /opt/homebrew/lib/QtWidgets.framework/Headers/qpushbutton.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qrubberband.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qsizepolicy.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qslider.h \
@@ -18042,8 +18028,10 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: /Users/johnk/TST3SoccerSim/src/main
   /Users/johnk/TST3SoccerSim/src/Player.h \
   /Users/johnk/TST3SoccerSim/src/Tactics.h \
   /Users/johnk/TST3SoccerSim/src/Team.h \
+  /Users/johnk/TST3SoccerSim/src/Theme.h \
   /Users/johnk/TST3SoccerSim/src/TransferMarket.h \
   /Users/johnk/TST3SoccerSim/src/Types.h \
+  /opt/homebrew/lib/QtCore.framework/Headers/QString \
   /opt/homebrew/lib/QtCore.framework/Headers/q17memory.h \
   /opt/homebrew/lib/QtCore.framework/Headers/q20bit.h \
   /opt/homebrew/lib/QtCore.framework/Headers/q20functional.h \
@@ -18186,6 +18174,7 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: /Users/johnk/TST3SoccerSim/src/main
   /opt/homebrew/lib/QtCore.framework/Headers/qversiontagging.h \
   /opt/homebrew/lib/QtCore.framework/Headers/qxptype_traits.h \
   /opt/homebrew/lib/QtCore.framework/Headers/qyieldcpu.h \
+  /opt/homebrew/lib/QtGui.framework/Headers/QFont \
   /opt/homebrew/lib/QtGui.framework/Headers/qaction.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qbitmap.h \
   /opt/homebrew/lib/QtGui.framework/Headers/qbrush.h \
@@ -18250,6 +18239,10 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: /Users/johnk/TST3SoccerSim/src/main
   /opt/homebrew/lib/QtWidgets.framework/Headers/qwidget.h
 
 
+/opt/homebrew/lib/QtCore.framework/Headers/QString:
+
+/Users/johnk/TST3SoccerSim/src/Theme.h:
+
 /opt/homebrew/lib/QtWidgets.framework/Headers/qsplitter.h:
 
 /opt/homebrew/lib/QtWidgets.framework/Headers/qformlayout.h:
@@ -18287,6 +18280,8 @@ CMakeFiles/TST3SoccerSim.dir/src/main.cpp.o: /Users/johnk/TST3SoccerSim/src/main
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/deque.h:
 
 /opt/homebrew/lib/QtWidgets.framework/Headers/qapplication.h:
+
+/opt/homebrew/lib/QtWidgets.framework/Headers/QStyle:
 
 /opt/homebrew/lib/QtWidgets.framework/Headers/qstatusbar.h:
 

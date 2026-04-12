@@ -31,6 +31,21 @@ MatchWidget::MatchWidget(QWidget* parent) : QWidget(parent) {
     commentaryBox->setFont(QFont("Courier", 12));
     layout->addWidget(commentaryBox);
 
+    // Pause/Resume toggle — visible during match, hidden after full time
+    pauseBtn = new QPushButton("Pause");
+    pauseBtn->setFixedHeight(36);
+    pauseBtn->setVisible(false);
+    connect(pauseBtn, &QPushButton::clicked, this, [this]() {
+        if (eventTimer->isActive()) {
+            eventTimer->stop();
+            pauseBtn->setText("Resume");
+        } else {
+            eventTimer->start();
+            pauseBtn->setText("Pause");
+        }
+    });
+    layout->addWidget(pauseBtn);
+
     // Other results label — hidden until full time
     otherResultsLabel = new QLabel;
     otherResultsLabel->setFont(QFont("Courier", 11));
@@ -62,6 +77,8 @@ void MatchWidget::startMatch(League& league, MatchEngine& engine, Fixture& fixtu
     commentaryBox->clear();
     continueBtn->setVisible(false);
     otherResultsLabel->setVisible(false);
+    pauseBtn->setText("Pause");
+    pauseBtn->setVisible(true);
 
     auto& homeTeam = league.teams[fixture.homeTeamIdx];
     auto& awayTeam = league.teams[fixture.awayTeamIdx];
@@ -86,6 +103,7 @@ void MatchWidget::startMatch(League& league, MatchEngine& engine, Fixture& fixtu
             .arg(result.homeGoals).arg(result.awayGoals)
             .arg(QString::fromStdString(result.awayTeam)));
         commentaryBox->append("\n<b>FULL TIME!</b>");
+        pauseBtn->setVisible(false);
         continueBtn->setVisible(true);
     }
 }
@@ -135,6 +153,7 @@ void MatchWidget::showNextEvent() {
             otherResultsLabel->setVisible(true);
         }
 
+        pauseBtn->setVisible(false);
         continueBtn->setVisible(true);
         return;
     }
