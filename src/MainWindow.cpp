@@ -12,6 +12,7 @@
 #include "PlayerProfileWidget.h"
 #include "SaveLoad.h"
 #include "DataGen.h"
+#include "FormatUtils.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -398,11 +399,11 @@ void MainWindow::updateTopBar() {
     }
 
     int week = league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1;
-    topBarInfo->setText(QString("Season %1  |  Week %2/%3  |  Budget: £%4k  |  %5%6 (%7 pts)")
+    topBarInfo->setText(QString("Season %1  |  Week %2/%3  |  Budget: %4  |  %5%6 (%7 pts)")
         .arg(league.season)
         .arg(week)
         .arg(league.totalWeeks())
-        .arg(team.budget / 1000)
+        .arg(FormatUtils::formatMoney(team.budget))
         .arg(leaguePos)
         .arg(leaguePos == 1 ? "st" : leaguePos == 2 ? "nd" : leaguePos == 3 ? "rd" : "th")
         .arg(pts));
@@ -481,7 +482,7 @@ void MainWindow::updateDashboard() {
         "<tr><td style='color: #6b7c93;'>Play Style</td>"
             "<td style='padding-left: 20px;'>%15</td></tr>"
         "<tr><td style='color: #6b7c93;'>Budget</td>"
-            "<td style='font-weight: bold; padding-left: 20px;'>£%16k</td></tr>"
+            "<td style='font-weight: bold; padding-left: 20px;'>%16</td></tr>"
         "</table>")
         .arg(QString::fromStdString(team.name))
         .arg(league.season).arg(week).arg(league.totalWeeks())
@@ -492,7 +493,7 @@ void MainWindow::updateDashboard() {
         .arg(gf).arg(ga)
         .arg(QString::fromStdString(team.tactics.formationStr()))
         .arg(QString::fromStdString(team.tactics.playStyleStr()))
-        .arg(team.budget / 1000);
+        .arg(FormatUtils::formatMoney(team.budget));
 
     dashboardLabel->setText(html);
 }
@@ -519,11 +520,11 @@ void MainWindow::showTeamSelect() {
     teamList->clear();
     for (int i = 0; i < (int)league.teams.size(); i++) {
         auto& team = league.teams[i];
-        QString entry = QString("%1.  %2    OVR: %3   Budget: £%4k")
+        QString entry = QString("%1.  %2    OVR: %3   Budget: %4")
             .arg(i + 1, 2)
             .arg(QString::fromStdString(team.name), -22)
             .arg(team.averageOverall(), 0, 'f', 0)
-            .arg(team.budget / 1000);
+            .arg(FormatUtils::formatMoney(team.budget));
         teamList->addItem(entry);
     }
     teamList->setCurrentRow(0);
@@ -557,9 +558,9 @@ void MainWindow::onTeamSelected(int index) {
     market.generateListings(league, playerTeamIdx);
 
     QMessageBox::information(this, "Welcome!",
-        QString("You are now the manager of %1!\n\nBudget: £%2k\nSquad size: %3 players")
+        QString("You are now the manager of %1!\n\nBudget: %2\nSquad size: %3 players")
             .arg(QString::fromStdString(league.teams[playerTeamIdx].name))
-            .arg(league.teams[playerTeamIdx].budget / 1000)
+            .arg(FormatUtils::formatMoney(league.teams[playerTeamIdx].budget))
             .arg(league.teams[playerTeamIdx].squad.size()));
 
     showGameUI();

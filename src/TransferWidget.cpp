@@ -14,6 +14,7 @@
 //         Squad table shows market values in thousands too.
 
 #include "TransferWidget.h"
+#include "FormatUtils.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -21,6 +22,8 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QGroupBox>
+
+using FormatUtils::formatMoney;
 
 TransferWidget::TransferWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -96,7 +99,7 @@ void TransferWidget::refresh(League& league, TransferMarket& market, int playerT
     currentMarket = &market;
     currentPlayerTeamIdx = playerTeamIdx;
 
-    budgetLabel->setText(QString("Your Budget: £%1k").arg(league.teams[playerTeamIdx].budget / 1000));
+    budgetLabel->setText(QString("Your Budget: %1").arg(formatMoney(league.teams[playerTeamIdx].budget)));
 
     // ---- POPULATE MARKET TABLE ----
     marketTable->setSortingEnabled(false);  // Disable sorting during population
@@ -132,9 +135,8 @@ void TransferWidget::refresh(League& league, TransferMarket& market, int playerT
 
         marketTable->setItem(i, col++, new QTableWidgetItem(QString::fromStdString(league.teams[l.teamIdx].name)));
 
-        // Price in thousands for numeric sorting
-        auto* priceItem = new QTableWidgetItem;
-        priceItem->setData(Qt::DisplayRole, l.askingPrice / 1000);
+        auto* priceItem = new QTableWidgetItem(formatMoney(l.askingPrice));
+        priceItem->setData(Qt::UserRole + 1, l.askingPrice);  // Raw value for sorting
         priceItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         marketTable->setItem(i, col++, priceItem);
     }
@@ -172,8 +174,8 @@ void TransferWidget::refresh(League& league, TransferMarket& market, int playerT
         ovrItem->setTextAlignment(Qt::AlignCenter);
         squadTable->setItem(i, col++, ovrItem);
 
-        auto* valItem = new QTableWidgetItem;
-        valItem->setData(Qt::DisplayRole, p.marketValue() / 1000);
+        auto* valItem = new QTableWidgetItem(formatMoney(p.marketValue()));
+        valItem->setData(Qt::UserRole + 1, p.marketValue());  // Raw value for sorting
         valItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         squadTable->setItem(i, col++, valItem);
     }
@@ -197,13 +199,12 @@ void TransferWidget::onBuy() {
     auto& l = currentMarket->listings[listingIdx];
     auto& p = currentLeague->teams[l.teamIdx].squad[l.playerIdx];
 
-    // Confirmation dialog: "Buy James Smith (FWD, OVR 15) for £2500k?"
     auto reply = QMessageBox::question(this, "Confirm Transfer",
-        QString("Buy %1 (%2, OVR %3) for £%4k?")
+        QString("Buy %1 (%2, OVR %3) for %4?")
             .arg(QString::fromStdString(p.name))
             .arg(QString::fromStdString(p.positionStr()))
             .arg(p.overall())
-            .arg(l.askingPrice / 1000));
+            .arg(formatMoney(l.askingPrice)));
 
     if (reply == QMessageBox::Yes) {
         if (currentMarket->buyPlayer(*currentLeague, currentPlayerTeamIdx, listingIdx)) {
@@ -230,11 +231,11 @@ void TransferWidget::onSell() {
     auto& p = currentLeague->teams[currentPlayerTeamIdx].squad[squadIdx];
 
     auto reply = QMessageBox::question(this, "Confirm Sale",
-        QString("Sell %1 (%2, OVR %3, value £%4k)?")
+        QString("Sell %1 (%2, OVR %3, value %4)?")
             .arg(QString::fromStdString(p.name))
             .arg(QString::fromStdString(p.positionStr()))
             .arg(p.overall())
-            .arg(p.marketValue() / 1000));
+            .arg(formatMoney(p.marketValue())));
 
     if (reply == QMessageBox::Yes) {
         if (currentMarket->sellPlayer(*currentLeague, currentPlayerTeamIdx, squadIdx)) {

@@ -1031,6 +1031,8 @@ CMakeFiles/TST3SoccerSim.dir/src/SquadWidget.cpp.o: \
   /opt/homebrew/lib/QtGui.framework/Headers/QColor \
   /opt/homebrew/lib/QtGui.framework/Headers/QFont \
   /opt/homebrew/lib/QtGui.framework/Headers/QCursor \
+  /Users/johnk/TST3SoccerSim/src/FormatUtils.h \
+  /opt/homebrew/lib/QtCore.framework/Headers/QString \
   /opt/homebrew/lib/QtWidgets.framework/Headers/QVBoxLayout \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qboxlayout.h \
   /opt/homebrew/lib/QtWidgets.framework/Headers/qlayout.h \
