@@ -215,6 +215,17 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     nextMatchHeading->setStyleSheet("color: #c8d6e5; margin-top: 20px;");
     nextMatchHeading->setText("Next Match");
     dashLayout->addWidget(nextMatchHeading);
+
+    vsLabel = new QLabel;
+    vsLabel->setFont(QFont("Helvetica Neue", 12));
+    vsLabel->setStyleSheet("color: #c8d6e5;");
+    vsLabel->setText("vs");
+    dashLayout->addWidget(vsLabel);
+
+    homeOrAwayLabel = new QLabel;
+    homeOrAwayLabel->setFont(QFont("Helvetica Neue", 12));
+    homeOrAwayLabel->setStyleSheet("color: #c8d6e5;");
+
     
     nextMatchBtn = new QPushButton;
     nextMatchBtn->setObjectName("nextMatchBtn");
@@ -232,7 +243,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(nextMatchBtn, &QPushButton::clicked, this, [this]() {
         if (nextMatchOpponentIdx >= 0) navigateToTeam(nextMatchOpponentIdx);
     });
-    dashLayout->addWidget(nextMatchBtn);
+
+    QHBoxLayout* hboxLayout = new QHBoxLayout();
+    hboxLayout->addWidget(vsLabel);
+    hboxLayout->addWidget(nextMatchBtn);
+    hboxLayout->addWidget(homeOrAwayLabel);
+    hboxLayout->setSpacing(5);
+    hboxLayout->setAlignment(Qt::AlignLeft);
+
+    dashLayout->addLayout(hboxLayout);
 
     dashLayout->addStretch();
     contentStack->addWidget(dashboardPage);
@@ -411,14 +430,16 @@ void MainWindow::updateDashboard() {
         for (auto& f : fixtures) {
             if (f.homeTeamIdx == playerTeamIdx) {
                 nextMatchOpponentIdx = f.awayTeamIdx;
-                nextMatchText = QString("vs %1 (Home)")
+                nextMatchText = QString("%1")
                     .arg(QString::fromStdString(league.teams[nextMatchOpponentIdx].name));
+                homeOrAwayLabel->setText("(Away)");
                 break;
             }
             if (f.awayTeamIdx == playerTeamIdx) {
                 nextMatchOpponentIdx = f.homeTeamIdx;
-                nextMatchText = QString("vs %1 (Away)")
+                nextMatchText = QString("%1")
                     .arg(QString::fromStdString(league.teams[nextMatchOpponentIdx].name));
+                homeOrAwayLabel->setText("(Home)");
                 break;
             }
         }
@@ -426,6 +447,8 @@ void MainWindow::updateDashboard() {
     nextMatchBtn->setText(nextMatchText);
     nextMatchBtn->setCursor(nextMatchOpponentIdx >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
     nextMatchBtn->setEnabled(nextMatchOpponentIdx >= 0);
+
+
 
     int week = league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1;
 

@@ -89,6 +89,8 @@ private:
     QStackedWidget* contentStack = nullptr;
     QWidget* dashboardPage = nullptr;
     QLabel* dashboardLabel = nullptr;
+    QLabel* vsLabel = nullptr;
+    QLabel* homeOrAwayLabel = nullptr;
     QLabel* nextMatchHeading = nullptr;
     QPushButton* nextMatchBtn = nullptr;      // Opponent name — hover-reveal link
     int nextMatchOpponentIdx = -1;            // Team index of the next opponent
