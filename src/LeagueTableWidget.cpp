@@ -6,6 +6,7 @@
 //   - Bold text for the Points column
 
 #include "LeagueTableWidget.h"
+#include "LinkUtils.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
 
@@ -24,6 +25,17 @@ LeagueTableWidget::LeagueTableWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));
     table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(table);
+
+    // Hover-reveal: link cells light up green + underline on mouse-over
+    LinkUtils::installHoverHandler(table);
+
+    // Click handler: if the clicked cell has a TeamIdxRole, navigate to that team
+    connect(table, &QTableWidget::cellClicked, this, [this](int row, int col) {
+        auto* item = table->item(row, col);
+        if (!item) return;
+        QVariant v = item->data(LinkUtils::TeamIdxRole);
+        if (v.isValid()) emit teamClicked(v.toInt());
+    });
 }
 
 // ============================================================================
@@ -58,8 +70,8 @@ void LeagueTableWidget::refresh(const League& league) {
 
         setItem(QString::number(i + 1));  // Position: 1, 2, 3, ...
 
-        // Team name gets the same background color but isn't centered (left-aligned by default)
-        auto* nameItem = new QTableWidgetItem(QString::fromStdString(team.name));
+        // Team name: clickable link styled in accent green
+        auto* nameItem = LinkUtils::makeTeamLink(QString::fromStdString(team.name), e.teamIdx);
         if (i == 0) nameItem->setBackground(QColor(70, 55, 0));
         else if (i >= (int)league.table.size() - 3) nameItem->setBackground(QColor(70, 20, 20));
         table->setItem(i, col++, nameItem);

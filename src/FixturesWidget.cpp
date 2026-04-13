@@ -4,6 +4,7 @@
 // Uses a QSpinBox to browse between weeks 1-30.
 
 #include "FixturesWidget.h"
+#include "LinkUtils.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -36,6 +37,16 @@ FixturesWidget::FixturesWidget(QWidget* parent) : QWidget(parent) {
 
     // Connect spinner changes — uses QOverload because QSpinBox::valueChanged has two overloads
     connect(weekSpinner, QOverload<int>::of(&QSpinBox::valueChanged), this, &FixturesWidget::onWeekChanged);
+
+    LinkUtils::installHoverHandler(table);
+
+    // Click handler: navigate to team when a team name link is clicked
+    connect(table, &QTableWidget::cellClicked, this, [this](int row, int col) {
+        auto* item = table->item(row, col);
+        if (!item) return;
+        QVariant v = item->data(LinkUtils::TeamIdxRole);
+        if (v.isValid()) emit teamClicked(v.toInt());
+    });
 }
 
 // ============================================================================
@@ -89,8 +100,8 @@ void FixturesWidget::onWeekChanged(int week) {
         // Check if the player's team is involved in this match
         bool isPlayerMatch = (f.homeTeamIdx == currentPlayerTeamIdx || f.awayTeamIdx == currentPlayerTeamIdx);
 
-        auto* homeItem = new QTableWidgetItem(QString::fromStdString(homeName));
-        auto* awayItem = new QTableWidgetItem(QString::fromStdString(awayName));
+        auto* homeItem = LinkUtils::makeTeamLink(QString::fromStdString(homeName), f.homeTeamIdx);
+        auto* awayItem = LinkUtils::makeTeamLink(QString::fromStdString(awayName), f.awayTeamIdx);
 
         // Middle column: score if played, "vs" if upcoming
         QString middle;

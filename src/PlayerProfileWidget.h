@@ -23,19 +23,19 @@ class PlayerProfileWidget : public QWidget {
     Q_OBJECT
 public:
     explicit PlayerProfileWidget(QWidget* parent = nullptr);
-    void refresh(const Player& player, const std::string& teamName, bool isStarter);
+    void refresh(const Player& player, const std::string& teamName, bool isStarter, int teamIdx = -1);
 
 signals:
-    void backClicked();  // Navigates back to Squad view
+    void backClicked();             // Navigates back to Squad view
+    void teamClicked(int teamIdx);  // Emitted when the club name link is clicked
 
 private:
-    // Builds one attribute bar: a label, a QProgressBar, and a numeric value.
-    // Returns a QWidget containing the whole row (label + bar + number).
-    // The bar's color changes based on the value/maxVal ratio.
     QWidget* buildAttrBar(const QString& label, int value, int maxVal = 20);
 
-    QLabel* nameLabel = nullptr;            // Player name at the top
-    QLabel* infoLabel = nullptr;            // Position, age, overall, club, value, starter status
-    QWidget* attrsContainer = nullptr;      // Container for the attribute bar grid
-    QLabel* statsLabel = nullptr;           // Season statistics table
+    QLabel* nameLabel = nullptr;
+    QLabel* infoLabel = nullptr;
+    QWidget* attrsContainer = nullptr;
+    QLabel* statsLabel = nullptr;
+
+    int currentTeamIdx = -1;        // Team index for the club name link
 };

@@ -16,6 +16,10 @@ public:
     explicit TopScorersWidget(QWidget* parent = nullptr);
     void refresh(const League& league);
 
+signals:
+    void teamClicked(int teamIdx);
+    void playerClicked(int teamIdx, int squadIdx);
+
 private:
     QTableWidget* table = nullptr;
 };

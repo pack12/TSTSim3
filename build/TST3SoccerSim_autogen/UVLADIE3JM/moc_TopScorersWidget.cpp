@@ -38,10 +38,23 @@ template <> constexpr inline auto TopScorersWidget::qt_create_metaobjectdata<qt_
 {
     namespace QMC = QtMocConstants;
     QtMocHelpers::StringRefStorage qt_stringData {
-        "TopScorersWidget"
+        "TopScorersWidget",
+        "teamClicked",
+        "",
+        "teamIdx",
+        "playerClicked",
+        "squadIdx"
     };
 
     QtMocHelpers::UintData qt_methods {
+        // Signal 'teamClicked'
+        QtMocHelpers::SignalData<void(int)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 3 },
+        }}),
+        // Signal 'playerClicked'
+        QtMocHelpers::SignalData<void(int, int)>(4, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 3 }, { QMetaType::Int, 5 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -63,10 +76,19 @@ Q_CONSTINIT const QMetaObject TopScorersWidget::staticMetaObject = { {
 void TopScorersWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **_a)
 {
     auto *_t = static_cast<TopScorersWidget *>(_o);
-    (void)_t;
-    (void)_c;
-    (void)_id;
-    (void)_a;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        switch (_id) {
+        case 0: _t->teamClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
+        case 1: _t->playerClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1])),(*reinterpret_cast<std::add_pointer_t<int>>(_a[2]))); break;
+        default: ;
+        }
+    }
+    if (_c == QMetaObject::IndexOfMethod) {
+        if (QtMocHelpers::indexOfMethod<void (TopScorersWidget::*)(int )>(_a, &TopScorersWidget::teamClicked, 0))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (TopScorersWidget::*)(int , int )>(_a, &TopScorersWidget::playerClicked, 1))
+            return;
+    }
 }
 
 const QMetaObject *TopScorersWidget::metaObject() const
@@ -85,6 +107,30 @@ void *TopScorersWidget::qt_metacast(const char *_clname)
 int TopScorersWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 {
     _id = QWidget::qt_metacall(_c, _id, _a);
+    if (_id < 0)
+        return _id;
+    if (_c == QMetaObject::InvokeMetaMethod) {
+        if (_id < 2)
+            qt_static_metacall(this, _c, _id, _a);
+        _id -= 2;
+    }
+    if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
+        if (_id < 2)
+            *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
+        _id -= 2;
+    }
     return _id;
+}
+
+// SIGNAL 0
+void TopScorersWidget::teamClicked(int _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
+}
+
+// SIGNAL 1
+void TopScorersWidget::playerClicked(int _t1, int _t2)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 1, nullptr, _t1, _t2);
 }
 QT_WARNING_POP

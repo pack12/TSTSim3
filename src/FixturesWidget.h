@@ -22,8 +22,11 @@ public:
     explicit FixturesWidget(QWidget* parent = nullptr);
     void refresh(const League& league, int playerTeamIdx);
 
+signals:
+    void teamClicked(int teamIdx);
+
 private slots:
-    void onWeekChanged(int week);  // Called when the user changes the week spinner
+    void onWeekChanged(int week);
 
 private:
     QTableWidget* table = nullptr;      // The fixtures/results table

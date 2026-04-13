@@ -31,10 +31,17 @@ PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
     nameLabel->setFont(QFont("Helvetica", 22, QFont::Bold));
     layout->addWidget(nameLabel);
 
-    // Info line: position (color-coded), age, overall, club, value, starter status
+    // Info line: position (color-coded), age, overall, club (clickable), value, starter status
     infoLabel = new QLabel;
     infoLabel->setFont(QFont("Helvetica", 13));
     infoLabel->setWordWrap(true);
+    infoLabel->setOpenExternalLinks(false);
+    connect(infoLabel, &QLabel::linkActivated, this, [this](const QString& link) {
+        if (link.startsWith("team:")) {
+            int idx = link.mid(5).toInt();
+            emit teamClicked(idx);
+        }
+    });
     layout->addWidget(infoLabel);
 
     // Horizontal separator line
@@ -130,7 +137,8 @@ QWidget* PlayerProfileWidget::buildAttrBar(const QString& label, int value, int 
 // ============================================================================
 // Populates the profile with data from the given player.
 // Called every time the user navigates to this screen from the squad list.
-void PlayerProfileWidget::refresh(const Player& player, const std::string& teamName, bool isStarter) {
+void PlayerProfileWidget::refresh(const Player& player, const std::string& teamName, bool isStarter, int teamIdx) {
+    currentTeamIdx = teamIdx;
     nameLabel->setText(QString::fromStdString(player.name));
 
     // Position gets a color: GK=gold, DEF=blue, MID=green, FWD=red
@@ -143,19 +151,25 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
         case Position::FWD: posColor = "#cc3333"; break;  // Red
     }
 
-    // Build the info line using HTML for inline styling
+    // Build the info line using HTML for inline styling.
+    // The club name is a clickable link styled in accent green.
+    QString clubHtml = (teamIdx >= 0)
+        ? QString("<a href='team:%1' style='color:#2dcc73; text-decoration:underline; font-weight:bold;'>%2</a>")
+            .arg(teamIdx).arg(QString::fromStdString(teamName))
+        : QString("<b>%1</b>").arg(QString::fromStdString(teamName));
+
     QString info = QString(
         "<span style='font-size:15px; color:%1; font-weight:bold;'>%2</span>"
         "  &nbsp;|&nbsp;  Age: <b>%3</b>"
         "  &nbsp;|&nbsp;  Overall: <b>%4</b>"
-        "  &nbsp;|&nbsp;  Club: <b>%5</b>"
+        "  &nbsp;|&nbsp;  Club: %5"
         "  &nbsp;|&nbsp;  Value: <b>£%6k</b>"
         "  &nbsp;|&nbsp;  %7")
         .arg(posColor)
         .arg(QString::fromStdString(player.positionStr()))
         .arg(player.age)
         .arg(player.overall())
-        .arg(QString::fromStdString(teamName))
+        .arg(clubHtml)
         .arg(player.marketValue() / 1000)
         .arg(isStarter ? "<span style='color:green;'>Starting XI</span>" : "Substitute");
 

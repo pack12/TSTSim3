@@ -17,11 +17,20 @@
 //    after EVERY row insertion, which is extremely slow and can mix up which data goes in which row.
 
 #include "SquadWidget.h"
+#include "LinkUtils.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
 
 SquadWidget::SquadWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
+
+    // Back button — only visible when viewing another team's squad
+    backBtn = new QPushButton("← Back");
+    backBtn->setFixedWidth(100);
+    backBtn->setCursor(Qt::PointingHandCursor);
+    backBtn->setVisible(false);
+    connect(backBtn, &QPushButton::clicked, this, &SquadWidget::backRequested);
+    layout->addWidget(backBtn);
 
     // Header label showing the team name
     headerLabel = new QLabel;
@@ -39,10 +48,23 @@ SquadWidget::SquadWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));                          // Monospace font for alignment
     layout->addWidget(table);
 
+    // Hover-reveal: player name links light up green on mouse-over
+    LinkUtils::installHoverHandler(table);
+
     // Footer label showing squad value and instructions
     valueLabel = new QLabel;
     valueLabel->setFont(QFont("Helvetica", 12));
     layout->addWidget(valueLabel);
+
+    // Single-click on a link cell navigates to that player's profile
+    connect(table, &QTableWidget::cellClicked, this, [this](int row, int col) {
+        auto* item = table->item(row, col);
+        if (!item) return;
+        QVariant pv = item->data(LinkUtils::PlayerIdxRole);
+        if (pv.isValid()) {
+            emit playerSelected(pv.toInt());
+        }
+    });
 
     // Double-click handler: read the original squad index from UserRole and emit it
     connect(table, &QTableWidget::cellDoubleClicked, this, [this](int row, int /*col*/) {
@@ -59,9 +81,17 @@ SquadWidget::SquadWidget(QWidget* parent) : QWidget(parent) {
 // ============================================================================
 // Rebuilds the entire table with the given team's data.
 // Called every time the player navigates to this screen.
-void SquadWidget::refresh(const Team& team) {
+void SquadWidget::refresh(const Team& team, int teamIdx, int playerTeamIdx) {
     currentTeam = &team;
-    headerLabel->setText(QString::fromStdString(team.name) + " — Squad");
+    currentTeamIdx = teamIdx;
+    currentPlayerTeamIdx = playerTeamIdx;
+
+    bool isOwnTeam = (teamIdx == playerTeamIdx);
+    backBtn->setVisible(!isOwnTeam);
+
+    QString title = QString::fromStdString(team.name) + " — Squad";
+    if (!isOwnTeam) title += "  (Scouting)";
+    headerLabel->setText(title);
 
     // CRITICAL: Disable sorting while populating! See explanation in the file header.
     table->setSortingEnabled(false);
@@ -110,8 +140,10 @@ void SquadWidget::refresh(const Team& team) {
         idxItem->setBackground(bg);
         table->setItem(i, col++, idxItem);
 
-        // Player identity
-        setTextItem(QString::fromStdString(p.name), false);  // Left-aligned name
+        // Player name — hover-reveal link to player profile
+        auto* nameItem = LinkUtils::makePlayerLink(QString::fromStdString(p.name), currentTeamIdx, i);
+        nameItem->setBackground(bg);
+        table->setItem(i, col++, nameItem);
         setTextItem(QString::fromStdString(p.positionStr()));
         setNumItem(p.age);
         setNumItem(p.overall());
@@ -143,5 +175,9 @@ void SquadWidget::refresh(const Team& team) {
     QString valStr = total >= 1000000
         ? QString("£%1.%2M").arg(total / 1000000).arg((total % 1000000) / 100000)
         : QString("£%1k").arg(total / 1000);
-    valueLabel->setText("Squad Value: " + valStr + "  |  Starting XI highlighted in green  |  Double-click a player for profile");
+
+    QString footer = "Squad Value: " + valStr + "  |  Starting XI highlighted in green";
+    footer += isOwnTeam ? "  |  Double-click a player for profile"
+                        : "  |  Double-click to scout a player";
+    valueLabel->setText(footer);
 }
