@@ -111,4 +111,5 @@ private:
     TransferMarket market;
     int playerTeamIdx = 0;
     int viewingTeamIdx = -1;  // Which team is shown in squad view (-1 = player's own team)
+    int previousPageIndex = 0; // Last sidebar page visited (for back navigation)
 };

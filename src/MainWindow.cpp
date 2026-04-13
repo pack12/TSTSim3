@@ -263,7 +263,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     squadWidget = new SquadWidget;
     connect(squadWidget, &SquadWidget::playerSelected, this, &MainWindow::onPlayerSelected);
     connect(squadWidget, &SquadWidget::backRequested, this, [this]() {
-        navigateTo(3); // Back to League Table
+        navigateTo(previousPageIndex);
     });
     contentStack->addWidget(squadWidget);
     navPages[1] = squadWidget;
@@ -299,6 +299,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
         int teamIdx = (viewingTeamIdx >= 0) ? viewingTeamIdx : playerTeamIdx;
         navigateToTeam(teamIdx);
     });
+
+    connect(playerProfileWidget, &PlayerProfileWidget::backToPreviousPageClicked, this, [this]() {
+        navigateTo(previousPageIndex);
+    });
+
     // Player profile can also have clickable team name → navigate to that team's squad
     connect(playerProfileWidget, &PlayerProfileWidget::teamClicked, this, &MainWindow::navigateToTeam);
     contentStack->addWidget(playerProfileWidget);
@@ -317,6 +322,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 // Switches the content area to the requested page and highlights the active sidebar button.
 // Also refreshes the target widget with current data so it's always up-to-date.
 void MainWindow::navigateTo(int pageIndex) {
+    previousPageIndex = pageIndex;  // Remember this page for back navigation
+
     // Update sidebar button highlighting
     for (int i = 0; i < NUM_NAV_BTNS; i++) {
         navBtns[i]->setProperty("active", i == pageIndex);

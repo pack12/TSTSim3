@@ -68,10 +68,24 @@ PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
 
     layout->addStretch();  // Push everything up
 
-    auto* backBtn = new QPushButton("Back to Squad");
-    backBtn->setFixedWidth(140);
-    connect(backBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backClicked);
-    layout->addWidget(backBtn);
+    QHBoxLayout* buttonRow = new QHBoxLayout;
+
+    auto* backToSquadBtn = new QPushButton("Back to Squad");
+    backToSquadBtn->setFixedWidth(140);
+    connect(backToSquadBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backClicked);
+
+    auto* backToPreviousPageBtn = new QPushButton("Back");
+    backToPreviousPageBtn->setFixedWidth(140);
+    connect(backToPreviousPageBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backToPreviousPageClicked);
+
+    buttonRow->addWidget(backToPreviousPageBtn);
+    buttonRow->addWidget(backToSquadBtn);
+    buttonRow->setSpacing(5);
+    buttonRow->setAlignment(Qt::AlignLeft);
+
+
+    //layout->addWidget(backBtn);
+    layout->addLayout(buttonRow);
 }
 
 // ============================================================================

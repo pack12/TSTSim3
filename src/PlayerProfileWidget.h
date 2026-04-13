@@ -27,6 +27,7 @@ public:
 
 signals:
     void backClicked();             // Navigates back to Squad view
+    void backToPreviousPageClicked(); //Navigates to previous page
     void teamClicked(int teamIdx);  // Emitted when the club name link is clicked
 
 private:
