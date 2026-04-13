@@ -15,6 +15,7 @@
 // the old children and creating new ones.
 
 #include "PlayerProfileWidget.h"
+#include "FormatUtils.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QGroupBox>
@@ -195,9 +196,9 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
     clubLabel->setText(QString::fromStdString(teamName));
 
     QString after = QString(
-        "&nbsp;|&nbsp;  Value: <b>£%1k</b>"
+        "&nbsp;|&nbsp;  Value: <b>%1</b>"
         "  &nbsp;|&nbsp;  %2")
-        .arg(player.marketValue() / 1000)
+        .arg(FormatUtils::formatMoney(player.marketValue()))
         .arg(isStarter ? "<span style='color:green;'>Starting XI</span>" : "Substitute");
     infoLabelAfter->setText(after);
 

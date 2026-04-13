@@ -18,6 +18,7 @@
 
 #include "SquadWidget.h"
 #include "LinkUtils.h"
+#include "FormatUtils.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
 
@@ -171,10 +172,7 @@ void SquadWidget::refresh(const Team& team, int teamIdx, int playerTeamIdx) {
     // Calculate and display total squad value
     int total = 0;
     for (auto& p : team.squad) total += p.marketValue();
-    // Format as £X.YM for millions or £Xk for thousands
-    QString valStr = total >= 1000000
-        ? QString("£%1.%2M").arg(total / 1000000).arg((total % 1000000) / 100000)
-        : QString("£%1k").arg(total / 1000);
+    QString valStr = FormatUtils::formatMoney(total);
 
     QString footer = "Squad Value: " + valStr + "  |  Starting XI highlighted in green";
     footer += isOwnTeam ? "  |  Double-click a player for profile"
