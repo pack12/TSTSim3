@@ -40,6 +40,11 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QWidget* parent = nullptr);
 
+public slots:
+    // FM-style navigation: any widget can request navigation to a team or player
+    void navigateToTeam(int teamIdx);
+    void navigateToPlayer(int teamIdx, int squadIdx);
+
 private slots:
     void onNewGame();
     void onLoadGame();
@@ -84,6 +89,11 @@ private:
     QStackedWidget* contentStack = nullptr;
     QWidget* dashboardPage = nullptr;
     QLabel* dashboardLabel = nullptr;
+    QLabel* vsLabel = nullptr;
+    QLabel* homeOrAwayLabel = nullptr;
+    QLabel* nextMatchHeading = nullptr;
+    QPushButton* nextMatchBtn = nullptr;      // Opponent name — hover-reveal link
+    int nextMatchOpponentIdx = -1;            // Team index of the next opponent
 
     // ---- SUB-PAGE WIDGETS ----
     SquadWidget* squadWidget = nullptr;
@@ -100,4 +110,6 @@ private:
     MatchEngine engine;
     TransferMarket market;
     int playerTeamIdx = 0;
+    int viewingTeamIdx = -1;  // Which team is shown in squad view (-1 = player's own team)
+    int previousPageIndex = 0; // Last sidebar page visited (for back navigation)
 };

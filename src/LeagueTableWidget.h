@@ -23,7 +23,10 @@ public:
     explicit LeagueTableWidget(QWidget* parent = nullptr);
     void refresh(const League& league);
 
+signals:
+    void teamClicked(int teamIdx);  // Emitted when a team name link is clicked
+
 private:
     QTableWidget* table = nullptr;
-    QLabel* headerLabel = nullptr;  // Shows "League Table — Season X"
+    QLabel* headerLabel = nullptr;
 };

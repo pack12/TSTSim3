@@ -5,6 +5,7 @@
 // and displays the top 30.
 
 #include "TopScorersWidget.h"
+#include "LinkUtils.h"
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
@@ -24,6 +25,23 @@ TopScorersWidget::TopScorersWidget(QWidget* parent) : QWidget(parent) {
     table->setFont(QFont("Courier", 12));
     table->horizontalHeader()->setStretchLastSection(true);
     layout->addWidget(table);
+
+    LinkUtils::installHoverHandler(table);
+
+    // Click handler: check for team or player link data on the clicked cell
+    connect(table, &QTableWidget::cellClicked, this, [this](int row, int col) {
+        auto* item = table->item(row, col);
+        if (!item) return;
+        QVariant playerVar = item->data(LinkUtils::PlayerIdxRole);
+        QVariant teamVar = item->data(LinkUtils::TeamIdxRole);
+        if (playerVar.isValid() && teamVar.isValid()) {
+            // Player link (has both team + player idx)
+            emit playerClicked(teamVar.toInt(), playerVar.toInt());
+        } else if (teamVar.isValid()) {
+            // Team-only link
+            emit teamClicked(teamVar.toInt());
+        }
+    });
 }
 
 // ============================================================================
@@ -38,15 +56,17 @@ TopScorersWidget::TopScorersWidget(QWidget* parent) : QWidget(parent) {
 //   4. Display the top 30 (or fewer if there aren't 30 scorers)
 //   5. Bold the top 3 entries (Golden Boot contenders)
 void TopScorersWidget::refresh(const League& league) {
-    // Temporary struct to hold scorer data for sorting
-    struct Scorer { std::string name; std::string team; int goals; int assists; };
+    // Temporary struct to hold scorer data for sorting (includes indices for link navigation)
+    struct Scorer { std::string name; std::string team; int goals; int assists; int teamIdx; int squadIdx; };
     std::vector<Scorer> scorers;
 
     // Collect all players with goals or assists from every team
-    for (auto& team : league.teams) {
-        for (auto& p : team.squad) {
-            if (p.goals > 0 || p.assists > 0) {
-                scorers.push_back({p.name, team.name, p.goals, p.assists});
+    for (int t = 0; t < (int)league.teams.size(); t++) {
+        auto& team = league.teams[t];
+        for (int p = 0; p < (int)team.squad.size(); p++) {
+            auto& player = team.squad[p];
+            if (player.goals > 0 || player.assists > 0) {
+                scorers.push_back({player.name, team.name, player.goals, player.assists, t, p});
             }
         }
     }
@@ -75,8 +95,19 @@ void TopScorersWidget::refresh(const League& league) {
         };
 
         setItem(QString::number(i + 1));                              // Rank: 1, 2, 3, ...
-        setItem(QString::fromStdString(scorers[i].name), false);      // Player name (left-aligned)
-        setItem(QString::fromStdString(scorers[i].team), false);      // Team name (left-aligned)
+
+        // Player name — clickable link to player profile
+        auto* playerItem = LinkUtils::makePlayerLink(
+            QString::fromStdString(scorers[i].name), scorers[i].teamIdx, scorers[i].squadIdx);
+        if (i < 3) { QFont f = playerItem->font(); f.setBold(true); playerItem->setFont(f); }
+        table->setItem(i, col++, playerItem);
+
+        // Team name — clickable link to team squad
+        auto* teamItem = LinkUtils::makeTeamLink(
+            QString::fromStdString(scorers[i].team), scorers[i].teamIdx);
+        if (i < 3) { QFont f = teamItem->font(); f.setBold(true); teamItem->setFont(f); }
+        table->setItem(i, col++, teamItem);
+
         setItem(QString::number(scorers[i].goals));                    // Goals
         setItem(QString::number(scorers[i].assists));                  // Assists
     }

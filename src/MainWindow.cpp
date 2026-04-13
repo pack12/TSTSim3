@@ -208,6 +208,51 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     dashboardLabel->setWordWrap(true);
     dashboardLabel->setAlignment(Qt::AlignTop | Qt::AlignLeft);
     dashLayout->addWidget(dashboardLabel);
+
+    // Next Match section — opponent name is a flat button with FM-style hover
+    nextMatchHeading = new QLabel;
+    nextMatchHeading->setFont(QFont("Helvetica Neue", 15, QFont::Bold));
+    nextMatchHeading->setStyleSheet("color: #c8d6e5; margin-top: 20px;");
+    nextMatchHeading->setText("Next Match");
+    dashLayout->addWidget(nextMatchHeading);
+
+    vsLabel = new QLabel;
+    vsLabel->setFont(QFont("Helvetica Neue", 12));
+    vsLabel->setStyleSheet("color: #c8d6e5;");
+    vsLabel->setText("vs");
+    dashLayout->addWidget(vsLabel);
+
+    homeOrAwayLabel = new QLabel;
+    homeOrAwayLabel->setFont(QFont("Helvetica Neue", 12));
+    homeOrAwayLabel->setStyleSheet("color: #c8d6e5;");
+
+    
+    nextMatchBtn = new QPushButton;
+    nextMatchBtn->setObjectName("nextMatchBtn");
+    nextMatchBtn->setCursor(Qt::ArrowCursor);
+    nextMatchBtn->setStyleSheet(
+        "QPushButton#nextMatchBtn {"
+        "  color: #c8d6e5; border: none; background: transparent;"
+        "  text-align: left; font-size: 14px; padding: 2px 0px;"
+        "}"
+        "QPushButton#nextMatchBtn:hover {"
+        "  color: #2dcc73; text-decoration: underline;"
+        "  cursor: pointer;"
+        "}"
+    );
+    connect(nextMatchBtn, &QPushButton::clicked, this, [this]() {
+        if (nextMatchOpponentIdx >= 0) navigateToTeam(nextMatchOpponentIdx);
+    });
+
+    QHBoxLayout* hboxLayout = new QHBoxLayout();
+    hboxLayout->addWidget(vsLabel);
+    hboxLayout->addWidget(nextMatchBtn);
+    hboxLayout->addWidget(homeOrAwayLabel);
+    hboxLayout->setSpacing(5);
+    hboxLayout->setAlignment(Qt::AlignLeft);
+
+    dashLayout->addLayout(hboxLayout);
+
     dashLayout->addStretch();
     contentStack->addWidget(dashboardPage);
     navPages[0] = dashboardPage;
@@ -217,6 +262,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     // ========================================================================
     squadWidget = new SquadWidget;
     connect(squadWidget, &SquadWidget::playerSelected, this, &MainWindow::onPlayerSelected);
+    connect(squadWidget, &SquadWidget::backRequested, this, [this]() {
+        navigateTo(previousPageIndex);
+    });
     contentStack->addWidget(squadWidget);
     navPages[1] = squadWidget;
 
@@ -225,10 +273,12 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     navPages[2] = tacticsWidget;
 
     leagueTableWidget = new LeagueTableWidget;
+    connect(leagueTableWidget, &LeagueTableWidget::teamClicked, this, &MainWindow::navigateToTeam);
     contentStack->addWidget(leagueTableWidget);
     navPages[3] = leagueTableWidget;
 
     fixturesWidget = new FixturesWidget;
+    connect(fixturesWidget, &FixturesWidget::teamClicked, this, &MainWindow::navigateToTeam);
     contentStack->addWidget(fixturesWidget);
     navPages[4] = fixturesWidget;
 
@@ -237,14 +287,25 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     navPages[5] = transferWidget;
 
     topScorersWidget = new TopScorersWidget;
+    connect(topScorersWidget, &TopScorersWidget::teamClicked, this, &MainWindow::navigateToTeam);
+    connect(topScorersWidget, &TopScorersWidget::playerClicked, this, &MainWindow::navigateToPlayer);
     contentStack->addWidget(topScorersWidget);
     navPages[6] = topScorersWidget;
 
-    // Player profile — accessed via squad double-click, not a sidebar button
+    // Player profile — accessed via squad double-click or clickable links, not a sidebar button
     playerProfileWidget = new PlayerProfileWidget;
     connect(playerProfileWidget, &PlayerProfileWidget::backClicked, this, [this]() {
-        navigateTo(1); // Back to squad
+        // Go back to whichever team's squad we were viewing
+        int teamIdx = (viewingTeamIdx >= 0) ? viewingTeamIdx : playerTeamIdx;
+        navigateToTeam(teamIdx);
     });
+
+    connect(playerProfileWidget, &PlayerProfileWidget::backToPreviousPageClicked, this, [this]() {
+        navigateTo(previousPageIndex);
+    });
+
+    // Player profile can also have clickable team name → navigate to that team's squad
+    connect(playerProfileWidget, &PlayerProfileWidget::teamClicked, this, &MainWindow::navigateToTeam);
     contentStack->addWidget(playerProfileWidget);
 
     // Match widget — accessed via Play Match button, not a sidebar button
@@ -261,6 +322,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 // Switches the content area to the requested page and highlights the active sidebar button.
 // Also refreshes the target widget with current data so it's always up-to-date.
 void MainWindow::navigateTo(int pageIndex) {
+    previousPageIndex = pageIndex;  // Remember this page for back navigation
+
     // Update sidebar button highlighting
     for (int i = 0; i < NUM_NAV_BTNS; i++) {
         navBtns[i]->setProperty("active", i == pageIndex);
@@ -273,7 +336,7 @@ void MainWindow::navigateTo(int pageIndex) {
     auto& team = league.teams[playerTeamIdx];
     switch (pageIndex) {
         case 0: updateDashboard(); break;
-        case 1: squadWidget->refresh(team); break;
+        case 1: viewingTeamIdx = playerTeamIdx; squadWidget->refresh(team, playerTeamIdx, playerTeamIdx); break;
         case 2: tacticsWidget->refresh(team); break;
         case 3: leagueTableWidget->refresh(league); break;
         case 4: fixturesWidget->refresh(league, playerTeamIdx); break;
@@ -283,6 +346,39 @@ void MainWindow::navigateTo(int pageIndex) {
 
     contentStack->setCurrentWidget(navPages[pageIndex]);
     updateTopBar();
+}
+
+// ============================================================================
+// FM-STYLE LINK NAVIGATION
+// ============================================================================
+// Called when any widget's clickable team link is activated.
+// Shows that team's squad in the squad widget (read-only for non-player teams).
+void MainWindow::navigateToTeam(int teamIdx) {
+    if (teamIdx < 0 || teamIdx >= (int)league.teams.size()) return;
+    viewingTeamIdx = teamIdx;
+    squadWidget->refresh(league.teams[teamIdx], teamIdx, playerTeamIdx);
+    contentStack->setCurrentWidget(squadWidget);
+
+    // Highlight "Squad" in sidebar if viewing own team, otherwise clear highlight
+    for (int i = 0; i < NUM_NAV_BTNS; i++) {
+        navBtns[i]->setProperty("active", (teamIdx == playerTeamIdx && i == 1));
+        navBtns[i]->style()->unpolish(navBtns[i]);
+        navBtns[i]->style()->polish(navBtns[i]);
+    }
+}
+
+// Called when any widget's clickable player link is activated.
+// Shows that player's profile, with back-navigation returning to their team's squad.
+void MainWindow::navigateToPlayer(int teamIdx, int squadIdx) {
+    if (teamIdx < 0 || teamIdx >= (int)league.teams.size()) return;
+    auto& team = league.teams[teamIdx];
+    if (squadIdx < 0 || squadIdx >= (int)team.squad.size()) return;
+
+    viewingTeamIdx = teamIdx;
+    auto xi = team.getStartingEleven();
+    bool isStarter = std::find(xi.begin(), xi.end(), squadIdx) != xi.end();
+    playerProfileWidget->refresh(team.squad[squadIdx], team.name, isStarter, teamIdx);
+    contentStack->setCurrentWidget(playerProfileWidget);
 }
 
 // ============================================================================
@@ -333,23 +429,33 @@ void MainWindow::updateDashboard() {
         }
     }
 
-    // Next match info
-    QString nextMatch = "Season complete";
+    // Next match info — set on separate hover-reveal button
+    QString nextMatchText = "Season complete";
+    nextMatchOpponentIdx = -1;
     if (!league.seasonComplete()) {
         auto& fixtures = league.schedule[league.currentWeek];
         for (auto& f : fixtures) {
             if (f.homeTeamIdx == playerTeamIdx) {
-                nextMatch = QString("vs %1 (Home)")
-                    .arg(QString::fromStdString(league.teams[f.awayTeamIdx].name));
+                nextMatchOpponentIdx = f.awayTeamIdx;
+                nextMatchText = QString("%1")
+                    .arg(QString::fromStdString(league.teams[nextMatchOpponentIdx].name));
+                homeOrAwayLabel->setText("(Away)");
                 break;
             }
             if (f.awayTeamIdx == playerTeamIdx) {
-                nextMatch = QString("vs %1 (Away)")
-                    .arg(QString::fromStdString(league.teams[f.homeTeamIdx].name));
+                nextMatchOpponentIdx = f.homeTeamIdx;
+                nextMatchText = QString("%1")
+                    .arg(QString::fromStdString(league.teams[nextMatchOpponentIdx].name));
+                homeOrAwayLabel->setText("(Home)");
                 break;
             }
         }
     }
+    nextMatchBtn->setText(nextMatchText);
+    nextMatchBtn->setCursor(nextMatchOpponentIdx >= 0 ? Qt::PointingHandCursor : Qt::ArrowCursor);
+    nextMatchBtn->setEnabled(nextMatchOpponentIdx >= 0);
+
+
 
     int week = league.seasonComplete() ? league.totalWeeks() : league.currentWeek + 1;
 
@@ -376,11 +482,7 @@ void MainWindow::updateDashboard() {
             "<td style='padding-left: 20px;'>%15</td></tr>"
         "<tr><td style='color: #6b7c93;'>Budget</td>"
             "<td style='font-weight: bold; padding-left: 20px;'>£%16k</td></tr>"
-        "</table>"
-        "<div style='margin-top: 24px;'>"
-        "<span style='font-size: 15px; font-weight: bold; color: #c8d6e5;'>Next Match</span><br>"
-        "<span style='font-size: 14px; color: #2dcc73;'>%17</span>"
-        "</div>")
+        "</table>")
         .arg(QString::fromStdString(team.name))
         .arg(league.season).arg(week).arg(league.totalWeeks())
         .arg(leaguePos).arg(league.teams.size())
@@ -390,8 +492,7 @@ void MainWindow::updateDashboard() {
         .arg(gf).arg(ga)
         .arg(QString::fromStdString(team.tactics.formationStr()))
         .arg(QString::fromStdString(team.tactics.playStyleStr()))
-        .arg(team.budget / 1000)
-        .arg(nextMatch);
+        .arg(team.budget / 1000);
 
     dashboardLabel->setText(html);
 }
@@ -523,15 +624,9 @@ void MainWindow::onSaveGame() {
 }
 
 void MainWindow::onPlayerSelected(int squadIndex) {
-    auto& team = league.teams[playerTeamIdx];
-    if (squadIndex < 0 || squadIndex >= (int)team.squad.size()) return;
-
-    auto xi = team.getStartingEleven();
-    bool isStarter = std::find(xi.begin(), xi.end(), squadIndex) != xi.end();
-
-    playerProfileWidget->refresh(team.squad[squadIndex], team.name, isStarter);
-    contentStack->setCurrentWidget(playerProfileWidget);
-    // Keep "Squad" highlighted since player profile is a sub-view of squad
+    // viewingTeamIdx tracks which team's squad we're looking at (could be any team)
+    int teamIdx = (viewingTeamIdx >= 0) ? viewingTeamIdx : playerTeamIdx;
+    navigateToPlayer(teamIdx, squadIndex);
 }
 
 void MainWindow::onEndOfSeason() {

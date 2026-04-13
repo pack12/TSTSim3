@@ -22,6 +22,7 @@
 #include <QWidget>
 #include <QTableWidget>
 #include <QLabel>
+#include <QPushButton>
 
 class SquadWidget : public QWidget {
     Q_OBJECT
@@ -29,18 +30,23 @@ public:
     explicit SquadWidget(QWidget* parent = nullptr);
 
     // Populates the table with the given team's squad data.
-    // Called every time the player navigates to the squad screen.
-    void refresh(const Team& team);
+    // teamIdx: index into League::teams[] for this team
+    // playerTeamIdx: the user's own team (used to show/hide "Back" and enable editing)
+    void refresh(const Team& team, int teamIdx, int playerTeamIdx);
 
     // Pointer to the team currently being displayed.
-    // Used internally to look up the starting XI for highlighting.
     const Team* currentTeam = nullptr;
 
 signals:
     void playerSelected(int squadIndex);    // Emitted when a player row is double-clicked
+    void backRequested();                   // Emitted when "Back" is clicked (viewing another team)
 
 private:
     QTableWidget* table = nullptr;      // The main sortable table
     QLabel* headerLabel = nullptr;      // "Alderwick City — Squad" at the top
     QLabel* valueLabel = nullptr;       // Squad value and instructions at the bottom
+    QPushButton* backBtn = nullptr;     // "Back" button — visible when viewing another team's squad
+
+    int currentTeamIdx = -1;            // Which team is being displayed
+    int currentPlayerTeamIdx = -1;      // The user's own team index
 };

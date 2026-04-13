@@ -41,12 +41,21 @@ template <> constexpr inline auto PlayerProfileWidget::qt_create_metaobjectdata<
     QtMocHelpers::StringRefStorage qt_stringData {
         "PlayerProfileWidget",
         "backClicked",
-        ""
+        "",
+        "backToPreviousPageClicked",
+        "teamClicked",
+        "teamIdx"
     };
 
     QtMocHelpers::UintData qt_methods {
         // Signal 'backClicked'
         QtMocHelpers::SignalData<void()>(1, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'backToPreviousPageClicked'
+        QtMocHelpers::SignalData<void()>(3, 2, QMC::AccessPublic, QMetaType::Void),
+        // Signal 'teamClicked'
+        QtMocHelpers::SignalData<void(int)>(4, 2, QMC::AccessPublic, QMetaType::Void, {{
+            { QMetaType::Int, 5 },
+        }}),
     };
     QtMocHelpers::UintData qt_properties {
     };
@@ -71,11 +80,17 @@ void PlayerProfileWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, 
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->backClicked(); break;
+        case 1: _t->backToPreviousPageClicked(); break;
+        case 2: _t->teamClicked((*reinterpret_cast<std::add_pointer_t<int>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::IndexOfMethod) {
         if (QtMocHelpers::indexOfMethod<void (PlayerProfileWidget::*)()>(_a, &PlayerProfileWidget::backClicked, 0))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PlayerProfileWidget::*)()>(_a, &PlayerProfileWidget::backToPreviousPageClicked, 1))
+            return;
+        if (QtMocHelpers::indexOfMethod<void (PlayerProfileWidget::*)(int )>(_a, &PlayerProfileWidget::teamClicked, 2))
             return;
     }
 }
@@ -99,14 +114,14 @@ int PlayerProfileWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 1)
+        if (_id < 3)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 1;
+        _id -= 3;
     }
     if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 1)
+        if (_id < 3)
             *reinterpret_cast<QMetaType *>(_a[0]) = QMetaType();
-        _id -= 1;
+        _id -= 3;
     }
     return _id;
 }
@@ -115,5 +130,17 @@ int PlayerProfileWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void PlayerProfileWidget::backClicked()
 {
     QMetaObject::activate(this, &staticMetaObject, 0, nullptr);
+}
+
+// SIGNAL 1
+void PlayerProfileWidget::backToPreviousPageClicked()
+{
+    QMetaObject::activate(this, &staticMetaObject, 1, nullptr);
+}
+
+// SIGNAL 2
+void PlayerProfileWidget::teamClicked(int _t1)
+{
+    QMetaObject::activate<void>(this, &staticMetaObject, 2, nullptr, _t1);
 }
 QT_WARNING_POP

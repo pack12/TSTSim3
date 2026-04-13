@@ -22,6 +22,8 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QFrame>
+#include <QEvent>
+#include <QMouseEvent>
 
 PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -31,11 +33,31 @@ PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
     nameLabel->setFont(QFont("Helvetica", 22, QFont::Bold));
     layout->addWidget(nameLabel);
 
-    // Info line: position (color-coded), age, overall, club, value, starter status
-    infoLabel = new QLabel;
+    // Info line: [position | age | overall | Club: <hover-link> | value | starter]
+    // Split into labels + a QPushButton for the club name (hover-reveal link)
+    auto* infoRow = new QHBoxLayout;
+    infoRow->setContentsMargins(0, 0, 0, 0);
+    infoRow->setSpacing(0);
+
+    infoLabel = new QLabel;  // Before club: position, age, overall
     infoLabel->setFont(QFont("Helvetica", 13));
-    infoLabel->setWordWrap(true);
-    layout->addWidget(infoLabel);
+    infoRow->addWidget(infoLabel,0,Qt::AlignBaseline);
+
+    clubLabel = new QLabel;
+    clubLabel->setFont(QFont("Helvetica", 13, QFont::Bold));
+    clubLabel->setStyleSheet("color: #c8d6e5;");
+    clubLabel->setAttribute(Qt::WA_Hover, true);
+    clubLabel->setMouseTracking(true);
+    clubLabel->installEventFilter(this);
+    infoRow->addWidget(clubLabel, 0, Qt::AlignBaseline);
+
+    infoLabelAfter = new QLabel;  // After club: value, starter status
+    infoLabelAfter->setFont(QFont("Helvetica", 13));
+    infoRow->addWidget(infoLabelAfter,0,Qt::AlignBaseline);
+
+    infoRow->setAlignment(Qt::AlignVCenter);
+    infoRow->addStretch();
+    layout->addLayout(infoRow);
 
     // Horizontal separator line
     auto* sep = new QFrame;
@@ -61,10 +83,24 @@ PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
 
     layout->addStretch();  // Push everything up
 
-    auto* backBtn = new QPushButton("Back to Squad");
-    backBtn->setFixedWidth(140);
-    connect(backBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backClicked);
-    layout->addWidget(backBtn);
+    QHBoxLayout* buttonRow = new QHBoxLayout;
+
+    auto* backToSquadBtn = new QPushButton("Back to Squad");
+    backToSquadBtn->setFixedWidth(140);
+    connect(backToSquadBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backClicked);
+
+    auto* backToPreviousPageBtn = new QPushButton("Back");
+    backToPreviousPageBtn->setFixedWidth(140);
+    connect(backToPreviousPageBtn, &QPushButton::clicked, this, &PlayerProfileWidget::backToPreviousPageClicked);
+
+    buttonRow->addWidget(backToPreviousPageBtn);
+    buttonRow->addWidget(backToSquadBtn);
+    buttonRow->setSpacing(5);
+    buttonRow->setAlignment(Qt::AlignLeft);
+
+
+    //layout->addWidget(backBtn);
+    layout->addLayout(buttonRow);
 }
 
 // ============================================================================
@@ -130,7 +166,8 @@ QWidget* PlayerProfileWidget::buildAttrBar(const QString& label, int value, int 
 // ============================================================================
 // Populates the profile with data from the given player.
 // Called every time the user navigates to this screen from the squad list.
-void PlayerProfileWidget::refresh(const Player& player, const std::string& teamName, bool isStarter) {
+void PlayerProfileWidget::refresh(const Player& player, const std::string& teamName, bool isStarter, int teamIdx) {
+    currentTeamIdx = teamIdx;
     nameLabel->setText(QString::fromStdString(player.name));
 
     // Position gets a color: GK=gold, DEF=blue, MID=green, FWD=red
@@ -143,23 +180,26 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
         case Position::FWD: posColor = "#cc3333"; break;  // Red
     }
 
-    // Build the info line using HTML for inline styling
-    QString info = QString(
+    // Info line — split across infoLabel, clubBtn, infoLabelAfter
+    QString before = QString(
         "<span style='font-size:15px; color:%1; font-weight:bold;'>%2</span>"
         "  &nbsp;|&nbsp;  Age: <b>%3</b>"
         "  &nbsp;|&nbsp;  Overall: <b>%4</b>"
-        "  &nbsp;|&nbsp;  Club: <b>%5</b>"
-        "  &nbsp;|&nbsp;  Value: <b>£%6k</b>"
-        "  &nbsp;|&nbsp;  %7")
+        "  &nbsp;|&nbsp;  Club:&nbsp;")
         .arg(posColor)
         .arg(QString::fromStdString(player.positionStr()))
         .arg(player.age)
-        .arg(player.overall())
-        .arg(QString::fromStdString(teamName))
+        .arg(player.overall());
+    infoLabel->setText(before);
+
+    clubLabel->setText(QString::fromStdString(teamName));
+
+    QString after = QString(
+        "&nbsp;|&nbsp;  Value: <b>£%1k</b>"
+        "  &nbsp;|&nbsp;  %2")
         .arg(player.marketValue() / 1000)
         .arg(isStarter ? "<span style='color:green;'>Starting XI</span>" : "Substitute");
-
-    infoLabel->setText(info);
+    infoLabelAfter->setText(after);
 
     // ---- REBUILD ATTRIBUTE BARS ----
     // We need to destroy the old layout and child widgets, then create new ones.
@@ -217,4 +257,24 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
     }
 
     statsLabel->setText(stats);
+}
+
+// ============================================================================
+// EVENT FILTER — hover-reveal link on club name label
+// ============================================================================
+bool PlayerProfileWidget::eventFilter(QObject* obj, QEvent* event) {
+    if (obj == clubLabel && currentTeamIdx >= 0) {
+        if (event->type() == QEvent::HoverEnter || event->type() == QEvent::Enter) {
+            clubLabel->setStyleSheet("color: #2dcc73; text-decoration: underline;");
+            clubLabel->setCursor(Qt::PointingHandCursor);
+        }
+        else if (event->type() == QEvent::HoverLeave || event->type() == QEvent::Leave) {
+            clubLabel->setStyleSheet("color: #c8d6e5;");
+            clubLabel->setCursor(Qt::ArrowCursor);
+        }
+        else if (event->type() == QEvent::MouseButtonRelease) {
+            emit teamClicked(currentTeamIdx);
+        }
+    }
+    return QWidget::eventFilter(obj, event);
 }
