@@ -18,6 +18,7 @@
 #include "Player.h"
 #include <QWidget>
 #include <QLabel>
+#include <QPushButton>
 
 class PlayerProfileWidget : public QWidget {
     Q_OBJECT
@@ -26,17 +27,22 @@ public:
     void refresh(const Player& player, const std::string& teamName, bool isStarter, int teamIdx = -1);
 
 signals:
-    void backClicked();             // Navigates back to Squad view
-    void backToPreviousPageClicked(); //Navigates to previous page
-    void teamClicked(int teamIdx);  // Emitted when the club name link is clicked
+    void backClicked();
+    void backToPreviousPageClicked();
+    void teamClicked(int teamIdx);
+
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
 
 private:
     QWidget* buildAttrBar(const QString& label, int value, int maxVal = 20);
 
     QLabel* nameLabel = nullptr;
-    QLabel* infoLabel = nullptr;
+    QLabel* infoLabel = nullptr;            // Position, age, overall (before club)
+    QLabel* clubLabel = nullptr;            // Club name — hover-reveal link via event filter
+    QLabel* infoLabelAfter = nullptr;       // Value, starter status (after club)
     QWidget* attrsContainer = nullptr;
     QLabel* statsLabel = nullptr;
 
-    int currentTeamIdx = -1;        // Team index for the club name link
+    int currentTeamIdx = -1;
 };

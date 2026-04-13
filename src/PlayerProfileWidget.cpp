@@ -22,6 +22,8 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QFrame>
+#include <QEvent>
+#include <QMouseEvent>
 
 PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
     auto* layout = new QVBoxLayout(this);
@@ -31,18 +33,31 @@ PlayerProfileWidget::PlayerProfileWidget(QWidget* parent) : QWidget(parent) {
     nameLabel->setFont(QFont("Helvetica", 22, QFont::Bold));
     layout->addWidget(nameLabel);
 
-    // Info line: position (color-coded), age, overall, club (clickable), value, starter status
-    infoLabel = new QLabel;
+    // Info line: [position | age | overall | Club: <hover-link> | value | starter]
+    // Split into labels + a QPushButton for the club name (hover-reveal link)
+    auto* infoRow = new QHBoxLayout;
+    infoRow->setContentsMargins(0, 0, 0, 0);
+    infoRow->setSpacing(0);
+
+    infoLabel = new QLabel;  // Before club: position, age, overall
     infoLabel->setFont(QFont("Helvetica", 13));
-    infoLabel->setWordWrap(true);
-    infoLabel->setOpenExternalLinks(false);
-    connect(infoLabel, &QLabel::linkActivated, this, [this](const QString& link) {
-        if (link.startsWith("team:")) {
-            int idx = link.mid(5).toInt();
-            emit teamClicked(idx);
-        }
-    });
-    layout->addWidget(infoLabel);
+    infoRow->addWidget(infoLabel,0,Qt::AlignBaseline);
+
+    clubLabel = new QLabel;
+    clubLabel->setFont(QFont("Helvetica", 13, QFont::Bold));
+    clubLabel->setStyleSheet("color: #c8d6e5;");
+    clubLabel->setAttribute(Qt::WA_Hover, true);
+    clubLabel->setMouseTracking(true);
+    clubLabel->installEventFilter(this);
+    infoRow->addWidget(clubLabel, 0, Qt::AlignBaseline);
+
+    infoLabelAfter = new QLabel;  // After club: value, starter status
+    infoLabelAfter->setFont(QFont("Helvetica", 13));
+    infoRow->addWidget(infoLabelAfter,0,Qt::AlignBaseline);
+
+    infoRow->setAlignment(Qt::AlignVCenter);
+    infoRow->addStretch();
+    layout->addLayout(infoRow);
 
     // Horizontal separator line
     auto* sep = new QFrame;
@@ -165,29 +180,26 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
         case Position::FWD: posColor = "#cc3333"; break;  // Red
     }
 
-    // Build the info line using HTML for inline styling.
-    // The club name is a clickable link styled in accent green.
-    QString clubHtml = (teamIdx >= 0)
-        ? QString("<a href='team:%1' style='color:#2dcc73; text-decoration:underline; font-weight:bold;'>%2</a>")
-            .arg(teamIdx).arg(QString::fromStdString(teamName))
-        : QString("<b>%1</b>").arg(QString::fromStdString(teamName));
-
-    QString info = QString(
+    // Info line — split across infoLabel, clubBtn, infoLabelAfter
+    QString before = QString(
         "<span style='font-size:15px; color:%1; font-weight:bold;'>%2</span>"
         "  &nbsp;|&nbsp;  Age: <b>%3</b>"
         "  &nbsp;|&nbsp;  Overall: <b>%4</b>"
-        "  &nbsp;|&nbsp;  Club: %5"
-        "  &nbsp;|&nbsp;  Value: <b>£%6k</b>"
-        "  &nbsp;|&nbsp;  %7")
+        "  &nbsp;|&nbsp;  Club:&nbsp;")
         .arg(posColor)
         .arg(QString::fromStdString(player.positionStr()))
         .arg(player.age)
-        .arg(player.overall())
-        .arg(clubHtml)
+        .arg(player.overall());
+    infoLabel->setText(before);
+
+    clubLabel->setText(QString::fromStdString(teamName));
+
+    QString after = QString(
+        "&nbsp;|&nbsp;  Value: <b>£%1k</b>"
+        "  &nbsp;|&nbsp;  %2")
         .arg(player.marketValue() / 1000)
         .arg(isStarter ? "<span style='color:green;'>Starting XI</span>" : "Substitute");
-
-    infoLabel->setText(info);
+    infoLabelAfter->setText(after);
 
     // ---- REBUILD ATTRIBUTE BARS ----
     // We need to destroy the old layout and child widgets, then create new ones.
@@ -245,4 +257,24 @@ void PlayerProfileWidget::refresh(const Player& player, const std::string& teamN
     }
 
     statsLabel->setText(stats);
+}
+
+// ============================================================================
+// EVENT FILTER — hover-reveal link on club name label
+// ============================================================================
+bool PlayerProfileWidget::eventFilter(QObject* obj, QEvent* event) {
+    if (obj == clubLabel && currentTeamIdx >= 0) {
+        if (event->type() == QEvent::HoverEnter || event->type() == QEvent::Enter) {
+            clubLabel->setStyleSheet("color: #2dcc73; text-decoration: underline;");
+            clubLabel->setCursor(Qt::PointingHandCursor);
+        }
+        else if (event->type() == QEvent::HoverLeave || event->type() == QEvent::Leave) {
+            clubLabel->setStyleSheet("color: #c8d6e5;");
+            clubLabel->setCursor(Qt::ArrowCursor);
+        }
+        else if (event->type() == QEvent::MouseButtonRelease) {
+            emit teamClicked(currentTeamIdx);
+        }
+    }
+    return QWidget::eventFilter(obj, event);
 }
